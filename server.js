@@ -3,6 +3,7 @@ const express = require('express')
 const mongoose = require('mongoose')
 const cookieParser = require('cookie-parser')
 const methodOverride = require('method-override')
+const cors = require('cors');
 const connectDB = require('./config/db')
 const adminRoutes = require('./routes/admin')
 const apiRoutes = require('./routes/api')
@@ -16,6 +17,11 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(methodOverride('_method'))
+// app.use(cors({
+//   origin: 'http://localhost:8080',
+//   credentials: true,
+// }));
+app.use(cors());
 app.set('view engine', 'ejs')
 
 // Routes
