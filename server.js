@@ -17,16 +17,31 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(methodOverride('_method'))
-// app.use(cors({
-//   origin: 'http://localhost:8080',
-//   credentials: true,
-// }));
-app.use(cors());
 app.set('view engine', 'ejs')
+
 
 // Routes
 app.use('/admin', adminRoutes)
 app.use('/api', apiRoutes)
+
+const allowedOrigins = [
+  'http://localhost:8080',
+  'https://www.mombasayouthawards.com/'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like curl or mobile apps)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Function to create a default admin user
 const createDefaultAdmin = async () => {
