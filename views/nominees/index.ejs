@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Nominees</title>
+</head>
+<body>
+  <h1>Nominees</h1>
+  <a href="/admin/nominees/new">Add New Nominee</a>
+  <form method="GET" action="/admin/nominees">
+    <input type="text" name="search" placeholder="Search by name" value="<%= search || '' %>" />
+    <select name="category">
+      <option value="">All Categories</option>
+      <% categories.forEach(cat => { %>
+        <option value="<%= cat._id %>" <%= category === cat._id.toString() ? 'selected' : '' %>><%= cat.name %></option>
+      <% }) %>
+    </select>
+    <button type="submit">Filter</button>
+  </form>
+  <ul>
+    <% nominees.forEach(nominee => { %>
+      <li>
+        <%= nominee.name %> - <%= nominee.category.name %> (<%= nominee.number_of_votes %> votes)
+        <a href="/admin/nominees/<%= nominee._id %>/edit">Edit</a>
+        <form action="/admin/nominees/<%= nominee._id %>?_method=DELETE" method="POST" style="display:inline;">
+          <button type="submit">Delete</button>
+        </form>
+      </li>
+    <% }) %>
+  </ul>
+</body>
+</html>

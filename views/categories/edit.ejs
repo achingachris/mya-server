@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Category</title>
+</head>
+<body>
+  <h1>Edit Category</h1>
+  <form method="POST" action="/admin/categories/<%= category._id %>?_method=PUT">
+    <input type="text" name="name" value="<%= category.name %>" required />
+    <textarea name="description"><%= category.description %></textarea>
+    <button type="submit">Update</button>
+  </form>
+</body>
+</html>

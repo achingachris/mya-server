@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Nomination Categories</title>
+</head>
+<body>
+  <h1>Nomination Categories</h1>
+  <a href="/admin/categories/new">Add New Category</a>
+  <ul>
+    <% categories.forEach(category => { %>
+      <li>
+        <%= category.name %> - <%= category.description %>
+        <a href="/admin/categories/<%= category._id %>/edit">Edit</a>
+        <form action="/admin/categories/<%= category._id %>?_method=DELETE" method="POST" style="display:inline;">
+          <button type="submit">Delete</button>
+        </form>
+      </li>
+    <% }) %>
+  </ul>
+</body>
+</html>

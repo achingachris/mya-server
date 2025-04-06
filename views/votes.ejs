@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Votes</title>
+</head>
+<body>
+  <h1>Votes</h1>
+  <ul>
+    <% votes.forEach(vote => { %>
+      <li>
+        Nominee: <%= vote.nominee.name %> |
+        Voter: <%= vote.voter_name %> (<%= vote.voter_email %>, <%= vote.voter_phone %>) |
+        Votes: <%= vote.number_of_votes %> |
+        Amount: <%= vote.payment_amount %> KES |
+        Status: <%= vote.payment_status %>
+      </li>
+    <% }) %>
+  </ul>
+</body>
+</html>

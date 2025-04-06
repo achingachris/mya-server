@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Nominee</title>
+</head>
+<body>
+  <h1>Edit Nominee</h1>
+  <form method="POST" action="/admin/nominees/<%= nominee._id %>?_method=PUT">
+    <input type="text" name="name" value="<%= nominee.name %>" required />
+    <select name="category" required>
+      <% categories.forEach(category => { %>
+        <option value="<%= category._id %>" <%= nominee.category.toString() === category._id.toString() ? 'selected' : '' %>>
+          <%= category.name %>
+        </option>
+      <% }) %>
+    </select>
+    <button type="submit">Update</button>
+  </form>
+</body>
+</html>
