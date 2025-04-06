@@ -27,11 +27,13 @@ router.get('/nominees', apiAuthMiddleware, async (req, res) => {
   res.json(nominees);
 });
 
-// Initiate Vote
-router.post('/vote/initiate', async (req, res) => {
-  const { nomineeId, numberOfVotes, voterName, voterEmail, voterPhone } = req.body;
+// Initiate Vote with Dynamic Nominee ID
+router.post('/vote/initiate/:nomineeId', async (req, res) => {
+  const { nomineeId } = req.params; // Get nomineeId from URL
+  const { numberOfVotes, voterName, voterEmail, voterPhone } = req.body;
 
-  if (!nomineeId || !numberOfVotes || !voterName || !voterEmail || !voterPhone) {
+  // Validation
+  if (!numberOfVotes || !voterName || !voterEmail || !voterPhone) {
     return res.status(400).json({ error: 'All fields are required' });
   }
 
@@ -52,7 +54,7 @@ router.post('/vote/initiate', async (req, res) => {
     voter_phone: voterPhone,
     number_of_votes: numberOfVotes,
     payment_amount,
-    payment_reference: null, // Will be updated after Paystack response
+    payment_reference: null,
   });
 
   const paystackResponse = await Paystack.transaction.initialize({

@@ -18,17 +18,18 @@ const authMiddleware = (req, res, next) => {
 
 const apiAuthMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1]
-  if (!token)
+  const hardcodedToken =
+    'TOKENIZATION'
+
+  if (!token) {
     return res
       .status(401)
       .json({ error: 'No token provided' })
-
-  try {
-    jwt.verify(token, process.env.JWT_SECRET)
-    next()
-  } catch (err) {
-    res.status(401).json({ error: 'Invalid token' })
   }
+  if (token !== hardcodedToken) {
+    return res.status(401).json({ error: 'Invalid token' })
+  }
+  next() // Proceed if the token matches
 }
 
 module.exports = { authMiddleware, apiAuthMiddleware }
