@@ -81,7 +81,7 @@ router.post('/vote/initiate/:nomineeId', async (req, res) => {
     amount: payment_amount * 100,
     reference,
     currency: 'KES',
-    callback_url: `http://localhost:8080/vote-success?nominee=${encodeURIComponent(nominee.name)}&votes=${numberOfVotes}`,
+    callback_url: `https://www.mombasayouthawards.com/vote-success?nominee=${encodeURIComponent(nominee.name)}&votes=${numberOfVotes}`,
   });
 
   vote.payment_reference = reference;
