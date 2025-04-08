@@ -22,10 +22,11 @@ app.set('view engine', 'ejs')
 // Routes
 const allowedOrigins = [
   'http://localhost:8080',
-  'http://localhost:3000/',
-  'https://mya-server.onrender.com/',
-  'https://www.mombasayouthawards.com/',
+  'http://localhost:3000',
+  'https://mya-server.onrender.com',
+  'https://www.mombasayouthawards.com',
 ]
+
 
 app.use(
   cors({
