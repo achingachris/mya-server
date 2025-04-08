@@ -3,7 +3,7 @@ const express = require('express')
 const mongoose = require('mongoose')
 const cookieParser = require('cookie-parser')
 const methodOverride = require('method-override')
-const cors = require('cors');
+const cors = require('cors')
 const connectDB = require('./config/db')
 const adminRoutes = require('./routes/admin')
 const apiRoutes = require('./routes/api')
@@ -19,29 +19,32 @@ app.use(cookieParser())
 app.use(methodOverride('_method'))
 app.set('view engine', 'ejs')
 
-
 // Routes
+const allowedOrigins = [
+  'http://localhost:8080',
+  'http://localhost:3000/',
+  'https://mya-server.onrender.com/',
+  'https://www.mombasayouthawards.com/',
+]
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true)
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true)
+      } else {
+        return callback(new Error('Not allowed by CORS'))
+      }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+)
+
 app.use('/admin', adminRoutes)
 app.use('/api', apiRoutes)
 
-const allowedOrigins = [
-  'http://localhost:8080',
-  'https://www.mombasayouthawards.com/'
-];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like curl or mobile apps)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
 
 // Function to create a default admin user
 const createDefaultAdmin = async () => {
