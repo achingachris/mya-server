@@ -93,6 +93,8 @@ router.post('/vote/initiate/:nomineeId', async (req, res) => {
 
 // Paystack Webhook
 router.post('/webhook/paystack', async (req, res) => {
+  console.log('Incoming webhook:', JSON.stringify(req.body, null, 2));
+
   const hash = crypto
     .createHmac('sha512', process.env.PAYSTACK_SECRET_KEY)
     .update(JSON.stringify(req.body))
@@ -106,19 +108,31 @@ router.post('/webhook/paystack', async (req, res) => {
 
   if (event.event === 'charge.success') {
     const reference = event.data.reference;
+    console.log('Looking for vote with reference:', reference);
 
     const vote = await Vote.findOne({ payment_reference: reference });
 
     if (vote && vote.payment_status !== 'completed') {
+      console.log('Vote found:', vote);
+
       vote.payment_status = 'completed';
       await vote.save();
+      console.log('Vote status updated to completed');
 
-      await Nominee.findByIdAndUpdate(vote.nominee, {
-        $inc: { number_of_votes: vote.number_of_votes },
-      });
+      try {
+        await Nominee.findByIdAndUpdate(vote.nominee, {
+          $inc: { number_of_votes: vote.number_of_votes },
+        });
+        console.log('Nominee vote count updated successfully');
+      } catch (err) {
+        console.error('Error updating nominee votes:', err);
+      }
+    } else {
+      console.log('Vote not found or already completed');
     }
   } else if (event.event === 'charge.failed') {
-    const vote = await Vote.findOne({ payment_reference: event.data.reference });
+    const reference = event.data.reference;
+    const vote = await Vote.findOne({ payment_reference: reference });
     if (vote) {
       vote.payment_status = 'failed';
       await vote.save();
@@ -127,6 +141,7 @@ router.post('/webhook/paystack', async (req, res) => {
 
   res.sendStatus(200);
 });
+
 
 
 
