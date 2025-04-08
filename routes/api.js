@@ -75,13 +75,14 @@ router.post('/vote/initiate/:nomineeId', async (req, res) => {
   });
 
   const reference = `vote-${vote._id.toString()}`;
+  const frontendUrl = process.env.FRONTEND_URL;
 
   const paystackResponse = await Paystack.transaction.initialize({
     email: voterEmail,
     amount: payment_amount * 100,
     reference,
     currency: 'KES',
-    callback_url: `https://www.mombasayouthawards.com/vote-success?nominee=${encodeURIComponent(nominee.name)}&votes=${numberOfVotes}`,
+    callback_url: `${frontendUrl}/vote-success?nominee=${encodeURIComponent(nominee.name)}&votes=${numberOfVotes}`,
   });
 
   vote.payment_reference = reference;
@@ -93,6 +94,7 @@ router.post('/vote/initiate/:nomineeId', async (req, res) => {
 
 // Paystack Webhook
 router.post('/webhook/paystack', async (req, res) => {
+  
   const hash = crypto
     .createHmac('sha512', process.env.PAYSTACK_SECRET_KEY)
     .update(JSON.stringify(req.body))
