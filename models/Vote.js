@@ -12,12 +12,12 @@ const voteSchema = new mongoose.Schema({
   number_of_votes: {
     type: Number,
     required: true,
-    enum: [10, 20, 30, 400],
+    enum: [10, 20, 30, 100, 200, 400],
   },
   payment_amount: {
     type: Number,
     required: true,
-    enum: [50, 100, 150, 2000],
+    enum: [50, 100, 150, 500, 1000, 2000],
   },
   payment_status: {
     type: String,

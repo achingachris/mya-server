@@ -17,37 +17,45 @@ const voteTiers = {
   400: 2000,
 };
 
-// Categories API
+// Get all categories
 router.get('/categories', apiAuthMiddleware, async (req, res) => {
-  const categories = await NominationCategory.find();
-  res.json(categories);
+  try {
+    const categories = await NominationCategory.find();
+    res.json(categories);
+  } catch (err) {
+    console.error('GET /categories error:', err);
+    res.status(500).json({ error: 'Failed to fetch categories' });
+  }
 });
 
-// Nominees API
+// Get all nominees
 router.get('/nominees', apiAuthMiddleware, async (req, res) => {
-  const nominees = await Nominee.find().populate('category');
-  res.json(nominees);
+  try {
+    const nominees = await Nominee.find().populate('category');
+    res.json(nominees);
+  } catch (err) {
+    console.error('GET /nominees error:', err);
+    res.status(500).json({ error: 'Failed to fetch nominees' });
+  }
 });
 
-// Nominees by Category API
+// Get nominees by category
 router.get('/nominees/category/:categoryId', apiAuthMiddleware, async (req, res) => {
   const { categoryId } = req.params;
 
   try {
     const category = await NominationCategory.findById(categoryId);
-    if (!category) {
-      return res.status(404).json({ error: 'Category not found' });
-    }
+    if (!category) return res.status(404).json({ error: 'Category not found' });
 
     const nominees = await Nominee.find({ category: categoryId }).populate('category');
     res.json(nominees);
   } catch (err) {
-    res.status(500).json({ error: 'Server error', details: err.message });
+    console.error(`GET /nominees/category/${categoryId} error:`, err);
+    res.status(500).json({ error: 'Failed to fetch nominees by category' });
   }
 });
 
-
-// Initiate Vote with Dynamic Nominee ID
+// Initiate vote and payment
 router.post('/vote/initiate/:nomineeId', async (req, res) => {
   const { nomineeId } = req.params;
   const { numberOfVotes, voterName, voterEmail, voterPhone } = req.body;
@@ -58,52 +66,56 @@ router.post('/vote/initiate/:nomineeId', async (req, res) => {
 
   if (!voteTiers[numberOfVotes]) {
     return res.status(400).json({
-      error: 'Invalid number of votes. Allowed options are: 10 votes (50 KES), 20 votes (100 KES), 30 votes (150 KES), or 400 votes (2000 KES).',
+      error: 'Invalid number of votes. Allowed options: 10 (50 KES), 20 (100), 30 (150), 100 (500), 200 (1000), 400 (2000).',
     });
   }
 
-  const nominee = await Nominee.findById(nomineeId);
-  if (!nominee) return res.status(404).json({ error: 'Nominee not found' });
+  try {
+    const nominee = await Nominee.findById(nomineeId);
+    if (!nominee) return res.status(404).json({ error: 'Nominee not found' });
 
-  const payment_amount = voteTiers[numberOfVotes];
-  const vote = await Vote.create({
-    nominee: nomineeId,
-    voter_name: voterName,
-    voter_email: voterEmail,
-    voter_phone: voterPhone,
-    number_of_votes: numberOfVotes,
-    payment_amount,
-    payment_status: 'pending',
-  });
+    const payment_amount = voteTiers[numberOfVotes];
 
-  const reference = `vote-${vote._id.toString()}`;
-  const frontendUrl = process.env.FRONTEND_URL;
+    const vote = await Vote.create({
+      nominee: nomineeId,
+      voter_name: voterName,
+      voter_email: voterEmail,
+      voter_phone: voterPhone,
+      number_of_votes: numberOfVotes,
+      payment_amount,
+      payment_status: 'pending',
+    });
 
-  const paystackResponse = await Paystack.transaction.initialize({
-    email: voterEmail,
-    amount: payment_amount * 100,
-    reference,
-    currency: 'KES',
-    callback_url: `${frontendUrl}/vote-success?nominee=${encodeURIComponent(nominee.name)}&votes=${numberOfVotes}`,
-  });
+    const reference = `vote-${vote._id.toString()}`;
+    const frontendUrl = process.env.FRONTEND_URL;
 
-  vote.payment_reference = reference;
-  await vote.save();
+    const paystackResponse = await Paystack.transaction.initialize({
+      email: voterEmail,
+      amount: payment_amount * 100,
+      reference,
+      currency: 'KES',
+      callback_url: `${frontendUrl}/vote-success?nominee=${encodeURIComponent(nominee.name)}&votes=${numberOfVotes}`,
+    });
 
-  res.json({ authorization_url: paystackResponse.data.authorization_url });
+    vote.payment_reference = reference;
+    await vote.save();
+
+    res.json({ authorization_url: paystackResponse.data.authorization_url });
+  } catch (err) {
+    console.error(`POST /vote/initiate/${req.params.nomineeId} error:`, err);
+    res.status(500).json({ error: 'Failed to initiate vote and payment' });
+  }
 });
 
-
-// Paystack Webhook
+// Paystack webhook
 router.post('/webhook/paystack', async (req, res) => {
-  
   const hash = crypto
     .createHmac('sha512', process.env.PAYSTACK_SECRET_KEY)
     .update(JSON.stringify(req.body))
     .digest('hex');
 
   if (hash !== req.headers['x-paystack-signature']) {
-    console.error('Invalid signature:', { computed: hash, received: req.headers['x-paystack-signature'] });
+    console.error('Invalid Paystack signature');
     return res.status(401).send('Invalid signature');
   }
 
@@ -111,7 +123,7 @@ router.post('/webhook/paystack', async (req, res) => {
 
   if (event.event === 'charge.success') {
     const reference = event.data.reference;
-    console.log('Processing charge.success for reference:', reference);
+    console.log('charge.success event for:', reference);
 
     try {
       const vote = await Vote.findOne({ payment_reference: reference });
@@ -121,34 +133,39 @@ router.post('/webhook/paystack', async (req, res) => {
       }
 
       if (vote.payment_status === 'completed') {
-        console.log('Vote already completed:', reference);
+        console.log('Vote already completed for:', reference);
         return res.sendStatus(200);
       }
 
       vote.payment_status = 'completed';
       await vote.save();
-      console.log('Vote status updated:', vote);
 
       const nominee = await Nominee.findByIdAndUpdate(
         vote.nominee,
         { $inc: { number_of_votes: vote.number_of_votes } },
         { new: true }
       );
+
       if (!nominee) {
         console.error('Nominee not found for vote:', vote);
       } else {
-        console.log('Nominee votes updated:', nominee);
+        console.log(`Updated nominee vote count: ${nominee.name} (+${vote.number_of_votes})`);
       }
     } catch (err) {
-      console.error('Webhook processing error:', err);
+      console.error('Webhook charge.success error:', err);
     }
   } else if (event.event === 'charge.failed') {
     const reference = event.data.reference;
-    const vote = await Vote.findOne({ payment_reference: reference });
-    if (vote) {
-      vote.payment_status = 'failed';
-      await vote.save();
-      console.log('Vote failed:', vote);
+
+    try {
+      const vote = await Vote.findOne({ payment_reference: reference });
+      if (vote) {
+        vote.payment_status = 'failed';
+        await vote.save();
+        console.log('Marked vote as failed:', reference);
+      }
+    } catch (err) {
+      console.error('Webhook charge.failed error:', err);
     }
   }
 
