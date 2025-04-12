@@ -13,7 +13,7 @@
     <ul class="list-group">
       <% votes.forEach(vote => { %>
         <li class="list-group-item">
-          <strong>Nominee:</strong> <%= vote.nominee.name %> |
+          <strong>Nominee:</strong> <%= vote.nominee ? vote.nominee.name : 'N/A' %> |
           <strong>Voter:</strong> <%= vote.voter_name %> (<%= vote.voter_email %>, <%= vote.voter_phone %>) |
           <strong>Votes:</strong> <%= vote.number_of_votes %> |
           <strong>Amount:</strong> <%= vote.payment_amount %> KES |
