@@ -9,6 +9,7 @@ const adminRoutes = require('./routes/admin')
 const apiRoutes = require('./routes/api')
 const Admin = require('./models/Admin')
 const bcrypt = require('bcryptjs')
+const engine = require('ejs-mate');
 
 const app = express()
 
@@ -17,7 +18,11 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(methodOverride('_method'))
+
+// Configure ejs-mate as the view engine
+app.engine('ejs', engine); // Use ejs-mate
 app.set('view engine', 'ejs')
+app.set('views', __dirname + '/views') // Make sure your views directory is correctly set
 
 // Routes
 const allowedOrigins = [
@@ -54,8 +59,12 @@ const createDefaultAdmin = async () => {
     if (adminCount === 0) {
       const defaultAdmin = new Admin({
         username: 'admin',
-        password: 'admin123',
+        password: 'admin123', // Remember to change this in production!
       })
+      // Hash the password before saving (you should ideally do this in your Admin model's pre-save hook)
+      const salt = await bcrypt.genSalt(10);
+      defaultAdmin.password = await bcrypt.hash(defaultAdmin.password, salt);
+
       await defaultAdmin.save()
       console.log(
         'Default admin created: username=admin, password=admin123'

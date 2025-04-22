@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %>
+    </title>
+    <%# This will be replaced by the specific page title %>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <%# Add any other common CSS files here %>
+</head>
+
+<body>
+
+    <%# Common Navigation Bar - Always visible %>
+    <nav class="nav justify-content-center py-3 bg-light mb-4">
+        <a class="nav-link" href="/admin/dashboard">Dashboard</a>
+        <a class="nav-link" href="/admin/categories">Manage Categories</a>
+        <a class="nav-link" href="/admin/nominees">Manage Nominees</a>
+        <a class="nav-link" href="/admin/votes">View Votes</a>
+        <%# Add a logout link if you have one %>
+        <a class="nav-link" href="/admin/logout">Logout</a>
+    </nav>
+
+
+    <main>
+        <%# Use the main tag for the primary content area %>
+        <%- body %>
+        <%# This is where the content from the specific view file will be injected %>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <%# Add any other common JS files here %>
+</body>
+
+</html>
