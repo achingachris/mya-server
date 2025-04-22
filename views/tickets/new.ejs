@@ -1,0 +1,45 @@
+<% layout('layout') %>
+<% title = 'Dashboard' %>
+
+<h1 class="h3 mb-4 text-gray-800">Add New Ticket (Manual)</h1>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Ticket Details</h6>
+    </div>
+    <div class="card-body">
+        <form action="/admin/tickets" method="POST">
+            <div class="form-group">
+                <label for="ticket_type">Ticket Type:</label>
+                <select class="form-control" id="ticket_type" name="ticket_type" required>
+                    <option value="">-- Select Ticket Type --</option>
+                    <% ticketTypes.forEach(type => { %>
+                        <option value="<%= type._id %>"><%= type.name %> (<%= type.price.toFixed(2) %>)</option>
+                    <% }) %>
+                </select>
+            </div>
+             <div class="form-group">
+                <label for="ticket_code">Ticket Code:</label>
+                <%# You might generate this automatically on the server %>
+                <input type="text" class="form-control" id="ticket_code" name="ticket_code" required>
+            </div>
+            <div class="form-group">
+                <label for="purchaser_name">Purchaser Name:</label>
+                <input type="text" class="form-control" id="purchaser_name" name="purchaser_name" required>
+            </div>
+            <div class="form-group">
+                <label for="purchaser_email">Purchaser Email:</label>
+                <input type="email" class="form-control" id="purchaser_email" name="purchaser_email" required>
+            </div>
+            <div class="form-group">
+                <label for="purchaser_phone">Purchaser Phone:</label>
+                <input type="text" class="form-control" id="purchaser_phone" name="purchaser_phone" required>
+            </div>
+             <%# Status is typically 'unused' initially %>
+             <input type="hidden" name="status" value="unused">
+
+            <button type="submit" class="btn btn-primary">Create Ticket</button>
+            <a href="/admin/tickets" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>

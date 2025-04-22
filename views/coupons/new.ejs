@@ -1,0 +1,57 @@
+<% layout('layout') %>
+<% title = 'Dashboard' %>
+
+<h1 class="h3 mb-4 text-gray-800">Add New Coupon</h1>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Coupon Details</h6>
+    </div>
+    <div class="card-body">
+        <form action="/admin/coupons" method="POST">
+            <div class="form-group">
+                <label for="code">Coupon Code:</label>
+                <input type="text" class="form-control" id="code" name="code" required>
+            </div>
+            <div class="form-group">
+                <label for="type">Discount Type:</label>
+                <select class="form-control" id="type" name="type" required>
+                    <option value="">-- Select Type --</option>
+                    <option value="percentage">Percentage (%)</option>
+                    <option value="fixed">Fixed Amount</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="value">Discount Value:</label>
+                <input type="number" class="form-control" id="value" name="value" step="0.01" required>
+            </div>
+             <div class="form-group">
+                <label for="max_uses">Maximum Uses (Leave blank for unlimited):</label>
+                <input type="number" class="form-control" id="max_uses" name="max_uses">
+            </div>
+            <div class="form-group">
+                <label for="expiry_date">Expiry Date:</label>
+                <input type="date" class="form-control" id="expiry_date" name="expiry_date" required>
+            </div>
+             <div class="form-group">
+                <label for="applicable_ticket_type">Applicable Ticket Type (Optional):</label>
+                <select class="form-control" id="applicable_ticket_type" name="applicable_ticket_type">
+                    <option value="">-- Any Ticket Type --</option>
+                    <% ticketTypes.forEach(type => { %>
+                        <option value="<%= type._id %>"><%= type.name %></option>
+                    <% }) %>
+                </select>
+                 <small class="form-text text-muted">Select a ticket type if this coupon only applies to that specific type.</small>
+            </div>
+             <div class="form-group">
+                <label for="description">Description (Optional):</label>
+                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+            </div>
+            <%# Status is typically 'active' initially %>
+            <input type="hidden" name="status" value="active">
+
+            <button type="submit" class="btn btn-primary">Create Coupon</button>
+            <a href="/admin/coupons" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
