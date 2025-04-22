@@ -10,6 +10,7 @@ const apiRoutes = require('./routes/api')
 const Admin = require('./models/Admin')
 const bcrypt = require('bcryptjs')
 const engine = require('ejs-mate');
+const path = require('path');
 
 const app = express()
 
@@ -19,12 +20,19 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(methodOverride('_method'))
 
+// Serve general static files from the 'public' directory
+// This will serve files like /css/style.css from public/css/style.css
+app.use(express.static(path.join(__dirname, 'public')));
+
+
 // Configure ejs-mate as the view engine
 app.engine('ejs', engine); // Use ejs-mate
 app.set('view engine', 'ejs')
-app.set('views', __dirname + '/views') // Make sure your views directory is correctly set
+// Use path.join for robustness
+app.set('views', path.join(__dirname, '/views'));
 
 // Routes
+
 const allowedOrigins = [
   'http://localhost:8080',
   'http://localhost:3000',
@@ -48,7 +56,15 @@ app.use(
   })
 )
 
-app.use('/admin', adminRoutes)
+// --- IMPORTANT: Serve static files for the /admin path BEFORE the adminRoutes router ---
+// This ensures requests like /admin/static/css/style.css are handled by serving the file
+// from public/static/css/style.css instead of falling into the adminRoutes router.
+app.use('/admin', express.static(path.join(__dirname, 'public')));
+// --- End of specific static serving for /admin ---
+
+
+// Define your main routes AFTER static files are served
+app.use('/admin', adminRoutes) // This router now handles paths under /admin that are NOT static files
 app.use('/api', apiRoutes)
 
 
