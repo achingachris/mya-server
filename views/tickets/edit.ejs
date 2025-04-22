@@ -1,6 +1,7 @@
 <% layout('layout') %>
 <% title = 'Dashboard' %>
 <%# This content will be injected into the layout file %>
+<%# This content will be injected into the layout file %>
 
 <h1 class="h3 mb-4 text-gray-800">Edit Ticket</h1>
 
@@ -22,7 +23,8 @@
             </div>
              <div class="form-group">
                 <label for="ticket_code">Ticket Code:</label>
-                <input type="text" class="form-control" id="ticket_code" name="ticket_code" value="<%= ticket.ticket_code %>" required>
+                <%# This input is marked as READONLY %>
+                <input type="text" class="form-control" id="ticket_code" name="ticket_code" value="<%= ticket.ticket_code %>" required readonly>
             </div>
             <div class="form-group">
                 <label for="purchaser_name">Purchaser Name:</label>
@@ -45,13 +47,18 @@
                 </select>
             </div>
              <div class="form-group">
-                <label for="payment_status">Payment Status:</label> <%# Added field %>
+                <label for="payment_status">Payment Status:</label>
                 <select class="form-control" id="payment_status" name="payment_status" required>
                      <option value="">-- Select Payment Status --</option>
                     <% paymentStatuses.forEach(status => { %>
-                        <option value="<%= status %>" <%= ticket.payment_status === status ? 'selected' : '' %>><%= status.charAt(0).toUpperCase() + status.slice(1) %></option> <%# Capitalize first letter %>
+                        <option value="<%= status %>" <%= ticket.payment_status === status ? 'selected' : '' %>><%= status.charAt(0).toUpperCase() + status.slice(1) %></option>
                     <% }) %>
                 </select>
+                 <small class="form-text text-muted">Manually update payment status if needed (e.g., offline payment).</small>
+            </div>
+             <div class="form-group">
+                <label for="paystack_reference">Paystack Reference (Read Only):</label>
+                <input type="text" class="form-control" id="paystack_reference" value="<%= ticket.paystack_reference || 'N/A' %>" readonly>
             </div>
              <div class="form-group">
                 <label for="used_at">Used At (Optional):</label>
