@@ -1,5 +1,6 @@
 <% layout('layout') %>
 <% title = 'Dashboard' %>
+<%# This content will be injected into the layout file %>
 
 <h1 class="h3 mb-4 text-gray-800">Add New Ticket (Manual)</h1>
 
@@ -34,6 +35,15 @@
             <div class="form-group">
                 <label for="purchaser_phone">Purchaser Phone:</label>
                 <input type="text" class="form-control" id="purchaser_phone" name="purchaser_phone" required>
+            </div>
+             <div class="form-group">
+                <label for="payment_status">Payment Status:</label> <%# Added field %>
+                <select class="form-control" id="payment_status" name="payment_status" required>
+                    <option value="">-- Select Payment Status --</option>
+                    <% paymentStatuses.forEach(status => { %>
+                        <option value="<%= status %>"><%= status.charAt(0).toUpperCase() + status.slice(1) %></option> <%# Capitalize first letter %>
+                    <% }) %>
+                </select>
             </div>
              <%# Status is typically 'unused' initially %>
              <input type="hidden" name="status" value="unused">

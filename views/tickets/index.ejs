@@ -24,25 +24,26 @@
                         <th>Purchaser Email</th>
                         <th>Purchaser Phone</th>
                         <th>Status</th>
+                        <th>Payment Status</th> <%# Added column %>
                         <th>Purchased At</th>
                         <th>Used At</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <% tickets.forEach(ticket => { %> <%# Loop over the 'tickets' array %>
+                    <% tickets.forEach(ticket => { %>
                     <tr>
                         <td><%= ticket.ticket_code %></td>
-                        <td><%= ticket.ticket_type ? ticket.ticket_type.name : 'N/A' %></td> <%# Display linked type name %>
+                        <td><%= ticket.ticket_type ? ticket.ticket_type.name : 'N/A' %></td>
                         <td><%= ticket.purchaser_name %></td>
                         <td><%= ticket.purchaser_email %></td>
                         <td><%= ticket.purchaser_phone %></td>
                         <td><%= ticket.status %></td>
-                        <td><%= ticket.createdAt.toDateString() %></td> <%# Purchased At (createdAt) %>
-                        <td><%= ticket.used_at ? ticket.used_at.toDateString() : 'N/A' %></td> <%# Used At %>
+                        <td><%= ticket.payment_status %></td> <%# Display payment status %>
+                        <td><%= ticket.createdAt.toDateString() %></td>
+                        <td><%= ticket.used_at ? ticket.used_at.toDateString() : 'N/A' %></td>
                         <td>
                             <a href="/admin/tickets/<%= ticket._id %>/edit" class="btn btn-warning btn-sm">Edit</a>
-                            <%# Delete form %>
                             <form action="/admin/tickets/<%= ticket._id %>?_method=DELETE" method="POST" class="d-inline">
                                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this ticket?')">Delete</button>
                             </form>

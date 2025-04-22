@@ -485,7 +485,6 @@ router.delete(
 // List Tickets
 router.get('/tickets', authMiddleware, async (req, res) => {
   try {
-    // Populate ticket_type to show type details in the list
     const tickets = await Ticket.find().populate(
       'ticket_type'
     )
@@ -502,9 +501,18 @@ router.get(
   authMiddleware,
   async (req, res) => {
     try {
-      // Need ticket types to link the new ticket to
       const ticketTypes = await TicketType.find()
-      res.render('tickets/new', { ticketTypes }) // Assuming views/admin/tickets/new.ejs
+      // Pass possible payment statuses to the view
+      const paymentStatuses = [
+        'pending',
+        'completed',
+        'failed',
+        'refunded',
+      ]
+      res.render('tickets/new', {
+        ticketTypes,
+        paymentStatuses,
+      }) // Assuming views/admin/tickets/new.ejs
     } catch (err) {
       console.error(err)
       res.status(500).send('Server Error')
@@ -518,23 +526,26 @@ router.post(
   authMiddleware,
   async (req, res) => {
     try {
-      // Basic validation and ensure required fields from schema are present
+      // Basic validation - ensure required fields from schema are present
       if (
         !req.body.ticket_type ||
         !req.body.purchaser_name ||
-        !req.body.purchaser_email ||
+        !req.body.purchurer_email ||
         !req.body.purchaser_phone ||
-        !req.body.ticket_code
+        !req.body.ticket_code ||
+        !req.body.status ||
+        !req.body.payment_status
       ) {
         return res
           .status(400)
           .send('Missing required fields')
       }
-      // You might want to add server-side validation for ticket_code uniqueness here too
+      // TODO: Add server-side validation for ticket_code uniqueness
 
       await Ticket.create(req.body)
 
-      // TODO: If creating manually via admin, you might need to manually increment tickets_sold on the linked TicketType
+      // TODO: If creating manually via admin and payment_status is 'completed',
+      // you might need to manually increment tickets_sold on the linked TicketType
 
       res.redirect('/admin/tickets')
     } catch (err) {
@@ -555,8 +566,24 @@ router.get(
       if (!ticket) {
         return res.status(404).send('Ticket not found')
       }
-      const ticketTypes = await TicketType.find() // Need ticket types for dropdown
-      res.render('tickets/edit', { ticket, ticketTypes }) // Assuming views/admin/tickets/edit.ejs
+      const ticketTypes = await TicketType.find()
+      const paymentStatuses = [
+        'pending',
+        'completed',
+        'failed',
+        'refunded',
+      ] // Pass possible payment statuses
+      // Format used_at date for the form input if needed
+      const used_at_formatted = ticket.used_at
+        ? ticket.used_at.toISOString().slice(0, 16)
+        : ''
+
+      res.render('tickets/edit', {
+        ticket,
+        ticketTypes,
+        paymentStatuses,
+        used_at_formatted,
+      }) // Assuming views/admin/tickets/edit.ejs
     } catch (err) {
       console.error(err)
       res.status(500).send('Server Error')
@@ -577,7 +604,8 @@ router.put(
         !req.body.purchaser_email ||
         !req.body.purchaser_phone ||
         !req.body.ticket_code ||
-        !req.body.status
+        !req.body.status ||
+        !req.body.payment_status
       ) {
         return res
           .status(400)
@@ -592,7 +620,7 @@ router.put(
         return res.status(404).send('Ticket not found')
       }
 
-      // TODO: If manually changing status to 'used', you might want to set 'used_at' date
+      // TODO: If manually changing status to 'used', you might want to set 'used_at' date if not provided
 
       res.redirect('/admin/tickets')
     } catch (err) {
@@ -601,7 +629,6 @@ router.put(
     }
   }
 )
-
 // Delete Ticket
 router.delete(
   '/tickets/:id',
@@ -615,7 +642,7 @@ router.delete(
         return res.status(404).send('Ticket not found')
       }
 
-      // TODO: If deleting a ticket, you might need to manually decrement tickets_sold on the linked TicketType
+      // TODO: If deleting a ticket that was marked 'completed', you might need to manually decrement tickets_sold on the linked TicketType
 
       res.redirect('/admin/tickets')
     } catch (err) {
