@@ -1,0 +1,171 @@
+<% layout('layout') %>
+    <% title='Dashboard' %>
+
+        <h1 class="h3 mb-4 text-gray-800">Check Ticket</h1>
+
+        <%# Display status message from callback if any %>
+            <% if (paymentStatus) { %>
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    Payment Status from Callback: <strong>
+                        <%= paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1) %>
+                    </strong>.
+                    <% if (paymentStatus==='completed' && metadataMissing) { %>
+                        <br> <em>Warning: Ticket ID missing in Paystack metadata, status updated by reference.</em>
+                        <% } %>
+                            <% if (paymentStatus==='completed_ticket_missing' ) { %>
+                                <br> <em>Warning: Paystack reported success, but ticket could not be found by ID or
+                                    reference.</em>
+                                <% } %>
+                                    <% if (paymentStatus==='callback_error' ) { %>
+                                        <br> <em>Error: Paystack callback received without a reference.</em>
+                                        <% } %>
+                                            <% if (paymentStatus==='verification_error' ) { %>
+                                                <br> <em>Error: Failed to verify transaction with Paystack.</em>
+                                                <% } %>
+                                                    <button type="button" class="close" data-dismiss="alert"
+                                                        aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                </div>
+                <% } %>
+
+
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Search Tickets</h6>
+                        </div>
+                        <div class="card-body">
+                            <%# Single Ticket Code Search %>
+                                <h5 class="mb-3">Search by Ticket Code</h5>
+                                <form action="/admin/tickets" method="GET" class="form-inline mb-4">
+                                    <div class="form-group mr-2">
+                                        <label for="code" class="sr-only">Ticket Code</label>
+                                        <input type="text" class="form-control" id="code" name="code"
+                                            placeholder="Enter Ticket Code" value="<%= searchQuery.code || '' %>">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Search Code</button>
+                                </form>
+
+                                <hr>
+
+                                <%# Advanced Search %>
+                                    <h5 class="mb-3">Advanced Search</h5>
+                                    <form action="/admin/tickets" method="GET">
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6">
+                                                <label for="name">Purchaser Name:</label>
+                                                <input type="text" class="form-control" id="name" name="name"
+                                                    value="<%= searchQuery.name || '' %>">
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label for="ticket_type">Ticket Type:</label>
+                                                <select class="form-control" id="ticket_type" name="ticket_type">
+                                                    <option value="">-- Select Ticket Type --</option>
+                                                    <% ticketTypes.forEach(type=> { %>
+                                                        <option value="<%= type._id %>"
+                                                            <%=searchQuery.ticket_type===type._id.toString()
+                                                            ? 'selected' : '' %>><%= type.name %>
+                                                        </option>
+                                                        <% }) %>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6">
+                                                <label for="email">Purchaser Email:</label>
+                                                <input type="email" class="form-control" id="email" name="email"
+                                                    value="<%= searchQuery.email || '' %>">
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label for="phone">Purchaser Phone:</label>
+                                                <input type="text" class="form-control" id="phone" name="phone"
+                                                    value="<%= searchQuery.phone || '' %>">
+                                            </div>
+                                        </div>
+                                        <small class="form-text text-muted mb-3">For advanced search, fill in one or
+                                            more
+                                            fields. Email or Phone will search for either.</small>
+                                        <button type="submit" class="btn btn-primary">Advanced Search</button>
+                                    </form>
+                        </div>
+                    </div>
+
+                    <%# Display Search Results %>
+                        <% if (tickets && tickets.length> 0) { %>
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Search Results (<%= tickets.length %>
+                                            found)</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" width="100%" cellspacing="0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Ticket Code</th>
+                                                    <th>Ticket Type</th>
+                                                    <th>Purchaser Name</th>
+                                                    <th>Purchaser Email</th>
+                                                    <th>Purchaser Phone</th>
+                                                    <th>Status</th>
+                                                    <th>Payment Status</th>
+                                                    <th>Purchased At</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% tickets.forEach(ticket=> { %>
+                                                    <tr>
+                                                        <td>
+                                                            <%= ticket.ticket_code %>
+                                                        </td>
+                                                        <td>
+                                                            <%= ticket.ticket_type ? ticket.ticket_type.name : 'N/A' %>
+                                                        </td>
+                                                        <td>
+                                                            <%= ticket.purchaser_name %>
+                                                        </td>
+                                                        <td>
+                                                            <%= ticket.purchaser_email %>
+                                                        </td>
+                                                        <td>
+                                                            <%= ticket.purchaser_phone %>
+                                                        </td>
+                                                        <td>
+                                                            <%= ticket.status %>
+                                                        </td>
+                                                        <td>
+                                                            <%= ticket.payment_status %>
+                                                        </td>
+                                                        <td>
+                                                            <%= ticket.createdAt.toDateString() %>
+                                                        </td>
+                                                        <td>
+                                                            <a href="/admin/tickets/<%= ticket._id %>/edit"
+                                                                class="btn btn-warning btn-sm">Edit</a>
+                                                            <%# Delete form %>
+                                                                <form
+                                                                    action="/admin/tickets/<%= ticket._id %>?_method=DELETE"
+                                                                    method="POST" class="d-inline">
+                                                                    <button type="submit" class="btn btn-danger btn-sm"
+                                                                        onclick="return confirm('Are you sure you want to delete this ticket?')">Delete</button>
+                                                                </form>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <% } else if (Object.keys(searchQuery).length> 0) { %>
+                                <%# Message when search is performed but no results found %>
+                                    <div class="alert alert-warning" role="alert">
+                                        No tickets found matching your search criteria.
+                                    </div>
+                                    <% } else { %>
+                                        <%# Message when page is loaded without search %>
+                                            <div class="alert alert-info" role="alert">
+                                                Enter criteria above to search for tickets.
+                                            </div>
+                                            <% } %>
