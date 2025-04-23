@@ -7,6 +7,9 @@ const cors = require('cors')
 const connectDB = require('./config/db')
 const adminRoutes = require('./routes/admin')
 const apiRoutes = require('./routes/api')
+const votingApiRoutes = require('./routes/api/voting')
+const ticketsApiRoutes = require('./routes/api/tickets')
+const paystackWebhook = require('./routes/api/paystack')
 const Admin = require('./models/Admin')
 const bcrypt = require('bcryptjs')
 const engine = require('ejs-mate');
@@ -64,8 +67,13 @@ app.use('/admin', express.static(path.join(__dirname, 'public')));
 
 
 // Define your main routes AFTER static files are served
-app.use('/admin', adminRoutes) // This router now handles paths under /admin that are NOT static files
+app.use('/admin', adminRoutes)
 app.use('/api', apiRoutes)
+
+// Version 2 APIs
+app.use('/api/v2/voting', votingApiRoutes)
+app.use('/api/v2/tickets', ticketsApiRoutes)
+app.use('/api/v2/paystack-webhook', paystackWebhook)
 
 
 // Function to create a default admin user

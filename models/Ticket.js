@@ -53,11 +53,11 @@ const ticketSchema = new mongoose.Schema(
     used_at: {
       type: Date,
     },
-    // Automatically add createdAt and updatedAt timestamps (represents purchase/creation time)
+    payment_reference: String,
   },
   {
     timestamps: true,
-  }
+  },
 )
 
 module.exports = mongoose.model('Ticket', ticketSchema)
