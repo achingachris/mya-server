@@ -141,7 +141,7 @@ router.post(
           currency: 'KES',
           // Callback URL Paystack redirects to after payment attempt
           // Include reference or ticket code so frontend knows which ticket the payment was for
-          callback_url: `${frontendUrl}/ticket-status?reference=${reference}`,
+          callback_url: `${frontendUrl}/ticket-success?reference=${reference}`,
         });
 
       // Check if Paystack initialization was successful
