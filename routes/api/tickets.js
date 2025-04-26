@@ -139,8 +139,7 @@ router.post(
           amount: payment_amount * 100, // Paystack amount is in cents (for KES)
           reference: reference,
           currency: 'KES',
-          // Callback URL Paystack redirects to after payment attempt
-          // Include reference or ticket code so frontend knows which ticket the payment was for
+          // CORRECTED Callback URL to match frontend route
           callback_url: `${frontendUrl}/ticket-success?reference=${reference}`,
         });
 
@@ -192,6 +191,52 @@ router.post(
     }
   }
 );
+
+// GET /api/tickets/by-reference/:reference
+// NEW ENDPOINT: Fetches details for a purchased ticket by its Paystack reference
+router.get('/by-reference/:reference', async (req, res) => {
+    const { reference } = req.params;
+
+    if (!reference) {
+        console.warn('GET /by-reference: Missing reference parameter');
+        return res.status(400).json({ error: 'Payment reference is required.' });
+    }
+
+    try {
+        // Find the ticket by the payment reference
+        // Populate ticket_type details as the frontend expects them
+        const ticket = await Ticket.findOne({ payment_reference: reference }).populate('ticket_type');
+
+        if (!ticket) {
+            console.warn(`GET /by-reference: Ticket not found for reference: ${reference}`);
+            return res.status(404).json({ error: 'Ticket not found for this reference.' });
+        }
+
+        // Check the payment status
+        if (ticket.payment_status === 'completed') {
+            // Payment is completed, return the ticket details
+            console.log(`GET /by-reference: Ticket payment completed for reference: ${reference}. Returning details.`);
+            res.json(ticket);
+        } else if (ticket.payment_status === 'pending' || ticket.payment_status === 'initialization_failed') {
+            // Payment is not yet completed (webhook hasn't fired or failed init)
+            console.log(`GET /by-reference: Ticket payment status is ${ticket.payment_status} for reference: ${reference}. Signalling frontend to retry.`);
+            // Return a 400 status to signal the frontend to potentially retry
+            // Include the current payment status in the error message
+            return res.status(400).json({ error: `Payment status for this ticket is ${ticket.payment_status}. Please wait or contact support if it doesn't update.` });
+        } else {
+            // Handle other statuses like 'failed', 'cancelled', 'refunded'
+            console.warn(`GET /by-reference: Ticket has payment status "${ticket.payment_status}" for reference: ${reference}.`);
+             return res.status(400).json({ error: `Ticket payment status is ${ticket.payment_status}. Please contact support.` });
+        }
+
+    } catch (err) {
+        console.error(`GET /api/tickets/by-reference/${reference} error:`, err);
+        res.status(500).json({
+            error: 'Failed to fetch ticket details by reference.',
+            details: err.message,
+        });
+    }
+});
 
 
 module.exports = router; // Export the router

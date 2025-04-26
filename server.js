@@ -5,12 +5,23 @@ const cookieParser = require('cookie-parser')
 const methodOverride = require('method-override')
 const cors = require('cors')
 const connectDB = require('./config/db')
+
+// Import routes
 const adminRoutes = require('./routes/admin')
+
+// Updated Admin routes
+const adminDashboardRoutes = require('./routes/admin/dashboard')
+
+// API Routes
 const apiRoutes = require('./routes/api')
 const votingApiRoutes = require('./routes/api/voting')
 const ticketsApiRoutes = require('./routes/api/tickets')
 const paystackWebhook = require('./routes/api/paystack')
+
+// Import models
 const Admin = require('./models/Admin')
+
+
 const bcrypt = require('bcryptjs')
 const engine = require('ejs-mate');
 const path = require('path');
@@ -67,7 +78,12 @@ app.use('/admin', express.static(path.join(__dirname, 'public')));
 
 
 // Define your main routes AFTER static files are served
+
 app.use('/admin', adminRoutes)
+
+// updated admin routes
+app.use('/dashboard', adminDashboardRoutes)
+
 app.use('/api', apiRoutes)
 
 // Version 2 APIs

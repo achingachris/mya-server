@@ -1,12 +1,53 @@
 <% layout('layout') %>
-<% title = 'Dashboard' %>
-  <div class="container mt-5">
-    <h1 class="text-center mb-4">Admin Dashboard</h1>
-    <p class="lead">Total Revenue: <%= totalRevenue %> KES</p>
+<% title = 'MYA | Dashboard' %>
 
-    <nav class="nav">
-      <a class="nav-link" href="/admin/categories">Manage Categories</a>
-      <a class="nav-link" href="/admin/nominees">Manage Nominees</a>
-      <a class="nav-link" href="/admin/votes">View Votes</a>
-    </nav>
+<div class="container mt-5">
+  <h1 class="text-center mb-4">Mombasa Youth Awards Dashboard</h1>
+  
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-5 g-4">
+    <div class="col">
+      <div class="card text-white bg-primary h-100">
+        <div class="card-body">
+          <h5 class="card-title">Voting Revenue</h5>
+          <p class="card-text"><%= totalRevenue %> KES</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card text-white bg-success h-100">
+        <div class="card-body">
+          <h5 class="card-title">Tickets Sold</h5>
+          <p class="card-text"><%= totalTicketsSold %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card text-white bg-info h-100">
+        <div class="card-body">
+          <h5 class="card-title">Ticket Types</h5>
+          <p class="card-text"><%= totalTicketTypes %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card text-white bg-warning h-100">
+        <div class="card-body">
+          <h5 class="card-title">Nominees</h5>
+          <p class="card-text"><%= totalNominees %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card text-white bg-dark h-100">
+        <div class="card-body">
+          <h5 class="card-title">Tickets Revenue</h5>
+          <p class="card-text">0 KES</p>
+        </div>
+      </div>
+    </div>
   </div>
+</div>
