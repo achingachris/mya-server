@@ -43,6 +43,17 @@
     </div>
   </form>
 
+  <%
+    // Construct the query string for the export link, excluding 'page'
+    const exportQuery = new URLSearchParams(Object.assign({}, query));
+    exportQuery.delete('page'); // Remove page parameter for export link
+    const exportHref = `/dashboard/votes/export?${exportQuery.toString()}`;
+  %>
+  <div class="text-end mb-3">
+      <a href="<%= exportHref %>" class="btn btn-success">Export to CSV</a>
+  </div>
+
+
   <div class="table-responsive mb-4">
     <% if (votes.length === 0) { %>
       <div class="alert alert-info text-center">
