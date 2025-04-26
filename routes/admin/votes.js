@@ -6,9 +6,7 @@ const Admin = require('../../models/Admin')
 const NominationCategory = require('../../models/NominationCategory')
 const Nominee = require('../../models/Nominee')
 const Vote = require('../../models/Vote')
-const TicketType = require('../../models/TicketType')
-const Ticket = require('../../models/Ticket')
-const Coupon = require('../../models/Coupon')
+
 
 const Paystack = require('paystack-api')(
   process.env.PAYSTACK_SECRET_KEY
@@ -26,15 +24,63 @@ if (!PAYSTACK_SECRET_KEY || !BASE_URL) {
   process.exit(1)
 }
 
-router.get('/votes', authMiddleware, async (req, res) => {
-  try {
-    const votes = await Vote.find().populate('nominee') // Populate nominee details
-    // Assuming views/admin/votes/index.ejs
-    res.render('votes/index', { votes })
-  } catch (err) {
-    console.error('GET /admin/votes error:', err)
-    res.status(500).send('Server Error')
-  }
-})
+router.get('', authMiddleware, async (req, res) => {
+    try {
+      const { nominee_name, payment_status, category_name, page = 1 } = req.query;
+      const limit = 20;
+      const skip = (parseInt(page) - 1) * limit;
+  
+      let filter = {};
+  
+      if (payment_status) {
+        filter.payment_status = payment_status;
+      }
+  
+      // Load all categories for dropdown
+      const categories = await NominationCategory.find().sort({ name: 1 });
+  
+      // Fetch all nominees with category details
+      let nomineesQuery = Nominee.find().populate('category');
+      if (nominee_name) {
+        nomineesQuery = nomineesQuery.where('name', new RegExp(nominee_name, 'i'));
+      }
+      const allNominees = await nomineesQuery.exec();
+  
+      // Filter nominees by category name if specified
+      let filteredNomineeIds = allNominees.map(n => n._id);
+      if (category_name) {
+        filteredNomineeIds = allNominees
+          .filter(n => n.category?.name === category_name)
+          .map(n => n._id);
+      }
+  
+      filter.nominee = { $in: filteredNomineeIds };
+  
+      const totalVotes = await Vote.countDocuments(filter);
+      const votes = await Vote.find(filter)
+        .populate({
+          path: 'nominee',
+          populate: { path: 'category' },
+        })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+  
+      const totalPages = Math.ceil(totalVotes / limit);
+  
+      res.render('votes/index', {
+        votes,
+        currentPage: parseInt(page),
+        totalPages,
+        totalVotes,
+        query: req.query,
+        categories,
+      });
+    } catch (err) {
+      console.error('GET /admin/votes error:', err);
+      res.status(500).send('Server Error');
+    }
+  });
+  
 
 module.exports = router

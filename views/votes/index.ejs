@@ -4,15 +4,165 @@
 <div class="container mt-5">
   <h1 class="text-center mb-4"><%= title %></h1>
 
-  <ul class="list-group">
-    <% votes.forEach(vote => { %>
-      <li class="list-group-item">
-        <strong>Nominee:</strong> <%= vote.nominee ? vote.nominee.name : 'N/A' %> |
-        <strong>Voter:</strong> <%= vote.voter_name %> (<%= vote.voter_email %>, <%= vote.voter_phone %>) |
-        <strong>Votes:</strong> <%= vote.number_of_votes %> |
-        <strong>Amount:</strong> <%= vote.payment_amount %> KES |
-        <strong>Status:</strong> <%= vote.payment_status %>
-      </li>
-    <% }) %>
-  </ul>
+  <form method="GET" class="row g-3 mb-4 align-items-end">
+    <div class="col-md-3">
+      <label for="nominee_name" class="form-label visually-hidden">Search Nominee Name</label>
+      <input
+        type="text"
+        class="form-control"
+        id="nominee_name"
+        name="nominee_name"
+        placeholder="Search Nominee Name"
+        value="<%= query.nominee_name || '' %>">
+    </div>
+
+    <div class="col-md-3">
+      <label for="payment_status" class="form-label visually-hidden">Payment Status</label>
+      <select name="payment_status" id="payment_status" class="form-select">
+        <option value="">All Payment Status</option>
+        <option value="pending" <%= query.payment_status === 'pending' ? 'selected' : '' %>>Pending</option>
+        <option value="completed" <%= query.payment_status === 'completed' ? 'selected' : '' %>>Completed</option>
+        <option value="failed" <%= query.payment_status === 'failed' ? 'selected' : '' %>>Failed</option>
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label for="category_name" class="form-label visually-hidden">Category Name</label>
+      <select name="category_name" id="category_name" class="form-select">
+        <option value="">All Categories</option>
+        <% categories.forEach(cat => { %>
+          <option value="<%= cat.name %>" <%= query.category_name === cat.name ? 'selected' : '' %>>
+            <%= cat.name %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="col-md-3 d-grid">
+      <button type="submit" class="btn btn-primary">Filter</button>
+    </div>
+  </form>
+
+  <div class="table-responsive mb-4">
+    <% if (votes.length === 0) { %>
+      <div class="alert alert-info text-center">
+        No votes found.
+      </div>
+    <% } else { %>
+      <table class="table table-striped table-bordered table-hover">
+        <thead>
+          <tr>
+            <th scope="col">Nominee (Category)</th>
+            <th scope="col">Voter (Email, Phone)</th>
+            <th scope="col">Votes</th>
+            <th scope="col">Amount (KES)</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% votes.forEach(vote => { %>
+            <tr>
+              <td>
+                <%= vote.nominee ? vote.nominee.name : 'N/A' %>
+                (<%= vote.nominee?.category?.name || 'No Category' %>)
+              </td>
+              <td>
+                <%= vote.voter_name %> (<%= vote.voter_email %>, <%= vote.voter_phone %>)
+              </td>
+              <td><%= vote.number_of_votes %></td>
+              <td><%= vote.payment_amount %></td>
+              <td>
+                <span class="badge bg-<%= vote.payment_status === 'completed' ? 'success' : vote.payment_status === 'pending' ? 'warning' : 'danger' %>">
+                  <%= vote.payment_status %>
+                </span>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+
+  <% if (totalPages > 1) { %>
+    <nav aria-label="Page navigation example">
+      <ul class="pagination justify-content-center">
+
+        <%
+          // Helper function to build the query string while preserving existing filters
+          const buildQueryString = (page) => {
+            const newQuery = new URLSearchParams(Object.assign({}, query)); // Start with existing query params
+            newQuery.set('page', page); // Set or update the page parameter
+            return newQuery.toString();
+          };
+
+          // Ensure currentPage is a number, default to 1 if not provided or invalid
+          const currentPage = parseInt(query.page) || 1;
+          const windowSize = 2; // Number of pages to show on each side of the current page
+
+          // Calculate the start and end pages for the visible window
+          let startPage = Math.max(1, currentPage - windowSize);
+          let endPage = Math.min(totalPages, currentPage + windowSize);
+
+          // Adjust the window if it's near the beginning or end
+          // This ensures we always show a certain number of pages if possible
+          const pagesToShow = (windowSize * 2) + 1; // Total pages in the window plus current page
+          if (endPage - startPage + 1 < pagesToShow) {
+              if (startPage === 1) {
+                  endPage = Math.min(totalPages, startPage + pagesToShow - 1);
+              } else if (endPage === totalPages) {
+                  startPage = Math.max(1, totalPages - pagesToShow + 1);
+              }
+          }
+
+          // Ensure start and end pages are within bounds again after adjustment
+          startPage = Math.max(1, startPage);
+          endPage = Math.min(totalPages, endPage);
+
+        %>
+
+        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+          <a class="page-link" href="?<%= buildQueryString(currentPage - 1) %>" tabindex="<%= currentPage === 1 ? '-1' : '' %>" aria-disabled="<%= currentPage === 1 %>">Previous</a>
+        </li>
+
+        <% if (startPage > 1) { %>
+          <li class="page-item <%= currentPage === 1 ? 'active' : '' %>">
+            <a class="page-link" href="?<%= buildQueryString(1) %>">1</a>
+          </li>
+        <% } %>
+
+        <% if (startPage > 2) { %>
+          <li class="page-item disabled">
+            <span class="page-link">...</span>
+          </li>
+        <% } %>
+
+        <% for (let i = startPage; i <= endPage; i++) { %>
+          <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+            <a class="page-link" href="?<%= buildQueryString(i) %>"><%= i %></a>
+          </li>
+        <% } %>
+
+        <% if (endPage < totalPages - 1) { %>
+          <li class="page-item disabled">
+            <span class="page-link">...</span>
+          </li>
+        <% } %>
+
+        <% if (endPage < totalPages) { %>
+          <li class="page-item <%= currentPage === totalPages ? 'active' : '' %>">
+            <a class="page-link" href="?<%= buildQueryString(totalPages) %>"><%= totalPages %></a>
+          </li>
+        <% } %>
+
+        <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+          <a class="page-link" href="?<%= buildQueryString(currentPage + 1) %>" tabindex="<%= currentPage === totalPages ? '-1' : '' %>" aria-disabled="<%= currentPage === totalPages %>">Next</a>
+        </li>
+
+      </ul>
+    </nav>
+  <% } %>
+
+  <p class="text-center text-muted mt-3">
+    Showing <strong><%= votes.length %></strong> of <strong><%= totalVotes %></strong> total votes
+  </p>
 </div>

@@ -11,6 +11,7 @@ const adminRoutes = require('./routes/admin')
 
 // Updated Admin routes
 const adminDashboardRoutes = require('./routes/admin/dashboard')
+const votesDashboardRoutes = require('./routes/admin/votes')
 
 // API Routes
 const apiRoutes = require('./routes/api')
@@ -83,6 +84,7 @@ app.use('/admin', adminRoutes)
 
 // updated admin routes
 app.use('/dashboard', adminDashboardRoutes)
+app.use('/dashboard/votes', votesDashboardRoutes)
 
 app.use('/api', apiRoutes)
 
