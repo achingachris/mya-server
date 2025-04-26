@@ -1,25 +1,46 @@
 <% layout('layout') %>
-<% title = 'Nomination Categories' %>
-  <div class="container mt-5">
-    <h1 class="text-center mb-4">Nomination Categories</h1>
+  <% title='Nomination Categories' %>
 
-    <div class="mb-3">
-      <a href="/admin/categories/new" class="btn btn-success">Add New Category</a>
+    <div class="container mt-5">
+      <h1 class="text-center mb-4">
+        <%= title %>
+      </h1>
+
+      <div class="mb-3">
+        <a href="/dashboard/nomination-categories/new" class="btn btn-success">Add New Category</a>
+      </div>
+
+      <div class="table-responsive mb-4">
+        <% if (categories.length===0) { %>
+          <div class="alert alert-info text-center">
+            No nomination categories found.
+          </div>
+          <% } else { %>
+            <table class="table table-striped table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">Category Name</th>
+                  <th scope="col">Description</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% categories.forEach(category=> { %>
+                  <tr>
+                    <td>
+                      <%= category.name %>
+                    </td>
+                    <td>
+                      <%= category.description %>
+                    </td>
+                    <td>
+                        <a href="/dashboard/nomination-categories/<%= category._id %>/edit" class="btn btn-warning btn-sm">Edit</a>
+                    </td>
+                  </tr>
+                  <% }) %>
+              </tbody>
+            </table>
+            <% } %>
+      </div>
+
     </div>
-
-    <ul class="list-group">
-      <% categories.forEach(category => { %>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            <strong><%= category.name %></strong> - <%= category.description %>
-          </div>
-          <div>
-            <a href="/admin/categories/<%= category._id %>/edit" class="btn btn-warning btn-sm me-2">Edit</a>
-            <form action="/admin/categories/<%= category._id %>?_method=DELETE" method="POST" style="display:inline;">
-              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-            </form>
-          </div>
-        </li>
-      <% }) %>
-    </ul>
-  </div>

@@ -30,7 +30,7 @@ if (!PAYSTACK_SECRET_KEY || !BASE_URL) {
 
 // List Nominees
 router.get(
-  '/nominees',
+  '',
   authMiddleware,
   async (req, res) => {
     try {
@@ -61,15 +61,16 @@ router.get(
 
 // New Nominee Form
 router.get(
-  '/nominees/new',
+  '/new',
   authMiddleware,
   async (req, res) => {
     try {
       const categories = await NominationCategory.find() // Need categories to select for nominee
       // Assuming views/admin/nominees/new.ejs
+      // FIX: Changed res.render('/new', ...) to res.render('nominees/new', ...)
       res.render('nominees/new', { categories })
     } catch (err) {
-      console.error('GET /admin/nominees/new error:', err)
+      console.error('GET /dashboard/nominees/new error:', err)
       res.status(500).send('Server Error')
     }
   }
@@ -77,24 +78,26 @@ router.get(
 
 // Create Nominee
 router.post(
-  '/nominees',
+  '',
   authMiddleware,
   async (req, res) => {
     try {
       // Basic validation - ensure required fields are present
+      // Added validation for image_url as per your template
       if (
         !req.body.name ||
         !req.body.category ||
-        !req.body.image_url
+        !req.body.image_url // Assuming image_url is required based on the template structure
       ) {
         return res
           .status(400)
           .send('Missing required fields for nominee')
       }
       await Nominee.create(req.body)
-      res.redirect('/admin/nominees')
+      // Redirecting to the list page after creation
+      res.redirect('/dashboard/nominees') // Changed redirect to /dashboard/nominees
     } catch (err) {
-      console.error('POST /admin/nominees error:', err)
+      console.error('POST /dashboard/nominees error:', err)
       res.status(500).send('Error creating nominee')
     }
   }
@@ -102,7 +105,7 @@ router.post(
 
 // Edit Nominee Form
 router.get(
-  '/nominees/:id/edit',
+  '/:id/edit',
   authMiddleware,
   async (req, res) => {
     try {
@@ -115,7 +118,7 @@ router.get(
       res.render('nominees/edit', { nominee, categories })
     } catch (err) {
       console.error(
-        `GET /admin/nominees/${req.params.id}/edit error:`,
+        `GET /dashboard/nominees/${req.params.id}/edit error:`,
         err
       )
       res.status(500).send('Server Error')
@@ -125,15 +128,16 @@ router.get(
 
 // Update Nominee
 router.put(
-  '/nominees/:id',
+  '/:id',
   authMiddleware,
   async (req, res) => {
     try {
       // Basic validation
+       // Added validation for image_url as per your template
       if (
         !req.body.name ||
         !req.body.category ||
-        !req.body.image_url
+        !req.body.image_url // Assuming image_url is required based on the template structure
       ) {
         return res
           .status(400)
@@ -147,10 +151,11 @@ router.put(
       if (!nominee) {
         return res.status(404).send('Nominee not found')
       }
-      res.redirect('/admin/nominees')
+      // Redirecting to the list page after update
+      res.redirect('/dashboard/nominees') // Changed redirect to /dashboard/nominees
     } catch (err) {
       console.error(
-        `PUT /admin/nominees/${req.params.id} error:`,
+        `PUT /dashboard/nominees/${req.params.id} error:`,
         err
       )
       res.status(500).send('Error updating nominee')
@@ -160,7 +165,7 @@ router.put(
 
 // Delete Nominee
 router.delete(
-  '/nominees/:id',
+  '/:id',
   authMiddleware,
   async (req, res) => {
     try {
@@ -171,10 +176,11 @@ router.delete(
         return res.status(404).send('Nominee not found')
       }
       // TODO: Add logic to handle votes linked to this nominee (e.g., prevent deletion if linked votes exist, or nullify the reference)
-      res.redirect('/admin/nominees')
+      // Redirecting to the list page after deletion
+      res.redirect('/dashboard/nominees') // Changed redirect to /dashboard/nominees
     } catch (err) {
       console.error(
-        `DELETE /admin/nominees/${req.params.id} error:`,
+        `DELETE /dashboard/nominees/${req.params.id} error:`,
         err
       )
       res.status(500).send('Error deleting nominee')

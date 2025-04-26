@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken')
 
 const authMiddleware = (req, res, next) => {
   const token = req.cookies.token
-  if (!token) return res.redirect('/admin/login')
+  if (!token) return res.redirect('/dashboard/login')
 
   try {
     const decoded = jwt.verify(
@@ -12,7 +12,7 @@ const authMiddleware = (req, res, next) => {
     req.admin = decoded
     next()
   } catch (err) {
-    res.redirect('/admin/login')
+    res.redirect('/dashboard/login')
   }
 }
 

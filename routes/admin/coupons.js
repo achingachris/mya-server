@@ -26,8 +26,11 @@ if (!PAYSTACK_SECRET_KEY || !BASE_URL) {
   process.exit(1)
 }
 
+// --- Coupons CRUD ---
+
 // List Coupons
-router.get('/coupons', authMiddleware, async (req, res) => {
+// This route matches GET /dashboard/coupons
+router.get('', authMiddleware, async (req, res) => { // Changed path from '/coupons' to ''
   try {
     // Optionally populate applicable_ticket_type if you want to display its details
     const coupons = await Coupon.find().populate(
@@ -36,14 +39,15 @@ router.get('/coupons', authMiddleware, async (req, res) => {
     // Assuming views/admin/coupons/index.ejs
     res.render('coupons/index', { coupons })
   } catch (err) {
-    console.error('GET /admin/coupons error:', err)
+    console.error('GET /dashboard/coupons error:', err) // Updated error log
     res.status(500).send('Server Error')
   }
 })
 
 // New Coupon Form
+// This route matches GET /dashboard/coupons/new
 router.get(
-  '/coupons/new',
+  '/new', // Changed path from '/coupons/new' to '/new'
   authMiddleware,
   async (req, res) => {
     try {
@@ -52,15 +56,16 @@ router.get(
       // Assuming views/admin/coupons/new.ejs
       res.render('coupons/new', { ticketTypes })
     } catch (err) {
-      console.error('GET /admin/coupons/new error:', err)
+      console.error('GET /dashboard/coupons/new error:', err) // Updated error log
       res.status(500).send('Server Error')
     }
   }
 )
 
 // Create Coupon
+// This route matches POST /dashboard/coupons
 router.post(
-  '/coupons',
+  '/', // Changed path from '/coupons' to '/'
   authMiddleware,
   async (req, res) => {
     try {
@@ -84,9 +89,10 @@ router.post(
       // TODO: Add server-side validation for coupon code uniqueness
 
       await Coupon.create(req.body)
-      res.redirect('/admin/coupons')
+      // Corrected redirect path
+      res.redirect('/dashboard/coupons')
     } catch (err) {
-      console.error('POST /admin/coupons error:', err)
+      console.error('POST /dashboard/coupons error:', err) // Updated error log
       // Handle potential duplicate code errors etc.
       res.status(500).send('Error creating coupon')
     }
@@ -94,8 +100,9 @@ router.post(
 )
 
 // Edit Coupon Form
+// This route matches GET /dashboard/coupons/:id/edit
 router.get(
-  '/coupons/:id/edit',
+  '/:id/edit', // Changed path from '/coupons/:id/edit' to '/:id/edit'
   authMiddleware,
   async (req, res) => {
     try {
@@ -118,7 +125,7 @@ router.get(
       })
     } catch (err) {
       console.error(
-        `GET /admin/coupons/${req.params.id}/edit error:`,
+        `GET /dashboard/coupons/${req.params.id}/edit error:`, // Updated error log
         err
       )
       res.status(500).send('Server Error')
@@ -127,8 +134,9 @@ router.get(
 )
 
 // Update Coupon
+// This route matches PUT /dashboard/coupons/:id
 router.put(
-  '/coupons/:id',
+  '/:id', // Changed path from '/coupons/:id' to '/:id'
   authMiddleware,
   async (req, res) => {
     try {
@@ -158,10 +166,11 @@ router.put(
       if (!coupon) {
         return res.status(404).send('Coupon not found')
       }
-      res.redirect('/admin/coupons')
+      // Corrected redirect path
+      res.redirect('/dashboard/coupons')
     } catch (err) {
       console.error(
-        `PUT /admin/coupons/${req.params.id} error:`,
+        `PUT /dashboard/coupons/${req.params.id} error:`, // Updated error log
         err
       )
       res.status(500).send('Error updating coupon')
@@ -170,8 +179,9 @@ router.put(
 )
 
 // Delete Coupon
+// This route matches DELETE /dashboard/coupons/:id
 router.delete(
-  '/coupons/:id',
+  '/:id', // Changed path from '/coupons/:id' to '/:id'
   authMiddleware,
   async (req, res) => {
     try {
@@ -182,10 +192,11 @@ router.delete(
         return res.status(404).send('Coupon not found')
       }
       // TODO: Consider if you need logic to handle coupons used in past orders
-      res.redirect('/admin/coupons')
+      // Corrected redirect path
+      res.redirect('/dashboard/coupons')
     } catch (err) {
       console.error(
-        `DELETE /admin/coupons/${req.params.id} error:`,
+        `DELETE /dashboard/coupons/${req.params.id} error:`, // Updated error log
         err
       )
       res.status(500).send('Error deleting coupon')

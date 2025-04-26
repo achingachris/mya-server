@@ -12,6 +12,11 @@ const adminRoutes = require('./routes/admin')
 // Updated Admin routes
 const adminDashboardRoutes = require('./routes/admin/dashboard')
 const votesDashboardRoutes = require('./routes/admin/votes')
+const categoriesDashboardRoutes = require('./routes/admin/categories')
+const nomineesDashboardRoutes = require('./routes/admin/nominees')
+const titcketTypesDashboardRoutes = require('./routes/admin/ticketypes')
+const ticketDashboardRoutes = require('./routes/admin/tickets')
+const couponsDashboardRoutes = require('./routes/admin/coupons')
 
 // API Routes
 const apiRoutes = require('./routes/api')
@@ -22,10 +27,9 @@ const paystackWebhook = require('./routes/api/paystack')
 // Import models
 const Admin = require('./models/Admin')
 
-
 const bcrypt = require('bcryptjs')
-const engine = require('ejs-mate');
-const path = require('path');
+const engine = require('ejs-mate')
+const path = require('path')
 
 const app = express()
 
@@ -37,14 +41,13 @@ app.use(methodOverride('_method'))
 
 // Serve general static files from the 'public' directory
 // This will serve files like /css/style.css from public/css/style.css
-app.use(express.static(path.join(__dirname, 'public')));
-
+app.use(express.static(path.join(__dirname, 'public')))
 
 // Configure ejs-mate as the view engine
-app.engine('ejs', engine); // Use ejs-mate
+app.engine('ejs', engine) // Use ejs-mate
 app.set('view engine', 'ejs')
 // Use path.join for robustness
-app.set('views', path.join(__dirname, '/views'));
+app.set('views', path.join(__dirname, '/views'))
 
 // Routes
 
@@ -54,7 +57,6 @@ const allowedOrigins = [
   'https://mya-server.onrender.com',
   'https://www.mombasayouthawards.com',
 ]
-
 
 app.use(
   cors({
@@ -74,17 +76,27 @@ app.use(
 // --- IMPORTANT: Serve static files for the /admin path BEFORE the adminRoutes router ---
 // This ensures requests like /admin/static/css/style.css are handled by serving the file
 // from public/static/css/style.css instead of falling into the adminRoutes router.
-app.use('/admin', express.static(path.join(__dirname, 'public')));
+app.use(
+  '/admin',
+  express.static(path.join(__dirname, 'public'))
+)
 // --- End of specific static serving for /admin ---
-
 
 // Define your main routes AFTER static files are served
 
-app.use('/admin', adminRoutes)
+// app.use('/admin', adminRoutes)
 
 // updated admin routes
 app.use('/dashboard', adminDashboardRoutes)
 app.use('/dashboard/votes', votesDashboardRoutes)
+app.use('/dashboard/nominees', nomineesDashboardRoutes)
+app.use(
+  '/dashboard/nomination-categories',
+  categoriesDashboardRoutes
+)
+app.use('/dashboard/ticket-types', titcketTypesDashboardRoutes)
+app.use('/dashboard/tickets', ticketDashboardRoutes)
+app.use('/dashboard/coupons', couponsDashboardRoutes)
 
 app.use('/api', apiRoutes)
 
@@ -93,7 +105,6 @@ app.use('/api/v2/voting', votingApiRoutes)
 app.use('/api/v2/tickets', ticketsApiRoutes)
 app.use('/api/v2/paystack-webhook', paystackWebhook)
 
-
 // Function to create a default admin user
 const createDefaultAdmin = async () => {
   try {
@@ -101,11 +112,14 @@ const createDefaultAdmin = async () => {
     if (adminCount === 0) {
       const defaultAdmin = new Admin({
         username: 'admin',
-        password: 'admin123', // Remember to change this in production!
+        password: 'admin123',
       })
       // Hash the password before saving (you should ideally do this in your Admin model's pre-save hook)
-      const salt = await bcrypt.genSalt(10);
-      defaultAdmin.password = await bcrypt.hash(defaultAdmin.password, salt);
+      const salt = await bcrypt.genSalt(10)
+      defaultAdmin.password = await bcrypt.hash(
+        defaultAdmin.password,
+        salt
+      )
 
       await defaultAdmin.save()
       console.log(

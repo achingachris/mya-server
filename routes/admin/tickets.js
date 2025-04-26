@@ -6,7 +6,7 @@ const Admin = require('../../models/Admin')
 const NominationCategory = require('../../models/NominationCategory')
 const Nominee = require('../../models/Nominee')
 const Vote = require('../../models/Vote')
-const TicketType = require('../../models/TicketType')
+const TicketType = require('../../models/TicketType') // Need TicketType to link tickets
 const Ticket = require('../../models/Ticket')
 const Coupon = require('../../models/Coupon')
 
@@ -26,8 +26,11 @@ if (!PAYSTACK_SECRET_KEY || !BASE_URL) {
   process.exit(1)
 }
 
+// --- Tickets CRUD ---
+
 // List Tickets with Search
-router.get('/tickets', authMiddleware, async (req, res) => {
+// This route matches GET /dashboard/tickets
+router.get('', authMiddleware, async (req, res) => { // Changed path from '/tickets' to ''
   try {
     // Extract search parameters from the query string
     const { code, name, ticket_type, email, phone } =
@@ -83,7 +86,7 @@ router.get('/tickets', authMiddleware, async (req, res) => {
     }
     // Note: If neither 'code' nor any advanced search parameters are provided (or they are empty strings),
     // the `query` object will be empty, and `Ticket.find({})` will return all tickets.
-    // This means the /admin/tickets route by default lists all tickets, and also handles search when parameters are present.
+    // This means the /dashboard/tickets route by default lists all tickets, and also handles search when parameters are present.
 
     // Populate the linked ticket_type document for display in the results
     const tickets = await Ticket.find(query).populate(
@@ -110,14 +113,15 @@ router.get('/tickets', authMiddleware, async (req, res) => {
       searchQuery: req.query, // Pass back search query values to pre-fill the form
     })
   } catch (err) {
-    console.error('GET /admin/tickets error:', err)
+    console.error('GET /dashboard/tickets error:', err) // Updated error log
     res.status(500).send('Server Error')
   }
 })
 
 // New Ticket Form
+// This route matches GET /dashboard/tickets/new
 router.get(
-  '/tickets/new',
+  '/new', // Changed path from '/tickets/new' to '/new'
   authMiddleware,
   async (req, res) => {
     try {
@@ -126,15 +130,16 @@ router.get(
       // Assuming views/admin/tickets/new.ejs
       res.render('tickets/new', { ticketTypes })
     } catch (err) {
-      console.error('GET /admin/tickets/new error:', err)
+      console.error('GET /dashboard/tickets/new error:', err) // Updated error log
       res.status(500).send('Server Error')
     }
   }
 )
 
 // Create Ticket and Initiate Paystack Payment
+// This route matches POST /dashboard/tickets
 router.post(
-  '/tickets',
+  '/', // Changed path from '/tickets' to '/'
   authMiddleware,
   async (req, res) => {
     try {
@@ -238,7 +243,8 @@ router.post(
               ticket_price: selectedTicketType.price,
             },
             // Set the callback URL that Paystack will redirect to after payment
-            callback_url: `${BASE_URL}/admin/paystack/ticket-callback`, // New callback route
+            // Corrected callback URL to match the router's path
+            callback_url: `${BASE_URL}/dashboard/tickets/paystack/ticket-callback`,
           })
 
         // Paystack initiation successful, redirect the admin's browser to the payment page
@@ -280,7 +286,7 @@ router.post(
           )
       }
     } catch (err) {
-      console.error('POST /admin/tickets error:', err)
+      console.error('POST /dashboard/tickets error:', err) // Updated error log
       // If ticket creation failed before Paystack initiation
       res.status(500).send('Error creating ticket record')
     }
@@ -288,9 +294,9 @@ router.post(
 )
 
 // Paystack Callback Route for Tickets (where Paystack redirects after payment)
-// This route will verify the transaction and update the ticket's status
+// This route matches GET /dashboard/tickets/paystack/ticket-callback
 router.get(
-  '/paystack/ticket-callback',
+  '/paystack/ticket-callback', // Path is '/paystack/ticket-callback' relative to the router's base path
   authMiddleware,
   async (req, res) => {
     // Added authMiddleware here
@@ -301,8 +307,9 @@ router.get(
         'Paystack ticket callback received without reference'
       )
       // Redirect to the tickets list with a status message
+      // Corrected redirect path
       return res.redirect(
-        '/admin/tickets?payment_status=callback_error'
+        '/dashboard/tickets?payment_status=callback_error'
       )
     }
 
@@ -390,7 +397,8 @@ router.get(
 
           // Redirect the admin back to the tickets list with the payment status
           // Include a flag if metadata was missing but found by reference
-          const redirectUrl = `/admin/tickets?payment_status=${
+          // Corrected redirect path
+          const redirectUrl = `/dashboard/tickets?payment_status=${
             ticketToUpdate.payment_status
           }${!ticketId ? '&metadata_missing=true' : ''}`
           res.redirect(redirectUrl)
@@ -399,8 +407,9 @@ router.get(
             `Ticket not found for ID ${ticketId} (from metadata) or reference ${paystackReference}`
           )
           // Handle case where ticket ID from metadata doesn't exist and reference lookup also fails
+          // Corrected redirect path
           res.redirect(
-            '/admin/tickets?payment_status=completed_ticket_missing'
+            '/dashboard/tickets?payment_status=completed_ticket_missing'
           )
         }
       } else {
@@ -416,8 +425,9 @@ router.get(
           ticketToUpdate.payment_status = 'failed'
           await ticketToUpdate.save()
         }
+        // Corrected redirect path
         res.redirect(
-          '/admin/tickets?payment_status=verification_error'
+          '/dashboard/tickets?payment_status=verification_error'
         )
       }
     } catch (verifyErr) {
@@ -433,8 +443,9 @@ router.get(
         ticketToUpdate.payment_status = 'failed'
         await ticketToUpdate.save()
       }
+      // Corrected redirect path
       res.redirect(
-        '/admin/tickets?payment_status=verification_error'
+        '/dashboard/tickets?payment_status=verification_error'
       )
     }
   }
@@ -443,8 +454,9 @@ router.get(
 // --- Tickets Edit and Delete (keep as is, but ensure payment_status is handled) ---
 
 // Edit Ticket Form (Ensure payment_status and paystack_reference are displayed)
+// This route matches GET /dashboard/tickets/:id/edit
 router.get(
-  '/tickets/:id/edit',
+  '/:id/edit', // Changed path from '/tickets/:id/edit' to '/:id/edit'
   authMiddleware,
   async (req, res) => {
     try {
@@ -472,7 +484,7 @@ router.get(
       })
     } catch (err) {
       console.error(
-        `GET /admin/tickets/${req.params.id}/edit error:`,
+        `GET /dashboard/tickets/${req.params.id}/edit error:`, // Updated error log
         err
       )
       res.status(500).send('Server Error')
@@ -481,8 +493,9 @@ router.get(
 )
 
 // Update Ticket (Allow manual update of details and status)
+// This route matches PUT /dashboard/tickets/:id
 router.put(
-  '/tickets/:id',
+  '/:id', // Changed path from '/tickets/:id' to '/:id'
   authMiddleware,
   async (req, res) => {
     try {
@@ -513,10 +526,11 @@ router.put(
 
       // TODO: If manually changing status to 'completed', you might need to manually increment tickets_sold on the linked TicketType
 
-      res.redirect('/admin/tickets')
+      // Corrected redirect path
+      res.redirect('/dashboard/tickets')
     } catch (err) {
       console.error(
-        `PUT /admin/tickets/${req.params.id} error:`,
+        `PUT /dashboard/tickets/${req.params.id} error:`, // Updated error log
         err
       )
       res.status(500).send('Error updating ticket')
@@ -525,8 +539,9 @@ router.put(
 )
 
 // Delete Ticket (keep as is)
+// This route matches DELETE /dashboard/tickets/:id
 router.delete(
-  '/tickets/:id',
+  '/:id', // Changed path from '/tickets/:id' to '/:id'
   authMiddleware,
   async (req, res) => {
     try {
@@ -539,10 +554,11 @@ router.delete(
 
       // TODO: If deleting a ticket that was marked 'completed', you might need to manually decrement tickets_sold on the linked TicketType
 
-      res.redirect('/admin/tickets')
+      // Corrected redirect path
+      res.redirect('/dashboard/tickets')
     } catch (err) {
       console.error(
-        `DELETE /admin/tickets/${req.params.id} error:`,
+        `DELETE /dashboard/tickets/${req.params.id} error:`, // Updated error log
         err
       )
       res.status(500).send('Error deleting ticket')

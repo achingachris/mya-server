@@ -29,34 +29,29 @@ if (!PAYSTACK_SECRET_KEY || !BASE_URL) {
 // --- Ticket Types CRUD ---
 
 // List Ticket Types
-router.get(
-  '/tickettypes',
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const ticketTypes = await TicketType.find()
-      // Assuming views/admin/tickettypes/index.ejs
-      res.render('tickettypes/index', { ticketTypes })
-    } catch (err) {
-      console.error('GET /admin/tickettypes error:', err)
-      res.status(500).send('Server Error')
-    }
+// This will match GET /dashboard/ticket-types
+router.get('', authMiddleware, async (req, res) => {
+  try {
+    const ticketTypes = await TicketType.find()
+    // Assuming views/admin/tickettypes/index.ejs
+    res.render('tickettypes/index', { ticketTypes })
+  } catch (err) {
+    console.error('GET /dashboard/ticket-types error:', err)
+    res.status(500).send('Server Error')
   }
-)
+})
 
 // New Ticket Type Form
-router.get(
-  '/tickettypes/new',
-  authMiddleware,
-  (req, res) => {
-    // Assuming views/admin/tickettypes/new.ejs
-    res.render('tickettypes/new')
-  }
-)
+// This will match GET /dashboard/ticket-types/new
+router.get('/new', authMiddleware, (req, res) => {
+  // Assuming views/admin/tickettypes/new.ejs
+  res.render('tickettypes/new')
+})
 
 // Create Ticket Type
+// This will match POST /dashboard/ticket-types
 router.post(
-  '/tickettypes',
+  '/', // Corrected path from '/tickettypes' to '/'
   authMiddleware,
   async (req, res) => {
     try {
@@ -80,9 +75,13 @@ router.post(
           .send('Price and Total Available must be numbers')
       }
       await TicketType.create(req.body)
-      res.redirect('/admin/tickettypes')
+      // Corrected redirect path
+      res.redirect('/dashboard/ticket-types')
     } catch (err) {
-      console.error('POST /admin/tickettypes error:', err)
+      console.error(
+        'POST /dashboard/ticket-types error:',
+        err
+      )
       // Handle potential duplicate name errors etc.
       res.status(500).send('Error creating ticket type')
     }
@@ -90,8 +89,9 @@ router.post(
 )
 
 // Edit Ticket Type Form
+// This will match GET /dashboard/ticket-types/:id/edit
 router.get(
-  '/tickettypes/:id/edit',
+  '/:id/edit', // Corrected path from '/tickettypes/:id/edit' to '/:id/edit'
   authMiddleware,
   async (req, res) => {
     try {
@@ -105,7 +105,7 @@ router.get(
       res.render('tickettypes/edit', { ticketType })
     } catch (err) {
       console.error(
-        `GET /admin/tickettypes/${req.params.id}/edit error`,
+        `GET /dashboard/ticket-types/${req.params.id}/edit error`,
         err
       )
       res.status(500).send('Server Error')
@@ -114,8 +114,9 @@ router.get(
 )
 
 // Update Ticket Type
+// This will match PUT /dashboard/ticket-types/:id
 router.put(
-  '/tickettypes/:id',
+  '/:id', // Corrected path from '/tickettypes/:id' to '/:id'
   authMiddleware,
   async (req, res) => {
     try {
@@ -146,10 +147,11 @@ router.put(
       if (!ticketType) {
         return res.status(404).send('Ticket type not found')
       }
-      res.redirect('/admin/tickettypes')
+      // Corrected redirect path
+      res.redirect('/dashboard/ticket-types')
     } catch (err) {
       console.error(
-        `PUT /admin/tickettypes/${req.params.id} error:`,
+        `PUT /dashboard/ticket-types/${req.params.id} error:`,
         err
       )
       res.status(500).send('Error updating ticket type')
@@ -158,8 +160,9 @@ router.put(
 )
 
 // Delete Ticket Type
+// This will match DELETE /dashboard/ticket-types/:id
 router.delete(
-  '/tickettypes/:id',
+  '/:id', // Corrected path from '/tickettypes/:id' to '/:id'
   authMiddleware,
   async (req, res) => {
     try {
@@ -170,10 +173,11 @@ router.delete(
         return res.status(404).send('Ticket type not found')
       }
       // TODO: Add logic to handle existing Tickets linked to this type (e.g., prevent deletion if linked tickets exist, or nullify the reference)
-      res.redirect('/admin/tickettypes')
+      // Corrected redirect path
+      res.redirect('/dashboard/ticket-types')
     } catch (err) {
       console.error(
-        `DELETE /admin/tickettypes/${req.params.id} error:`,
+        `DELETE /dashboard/ticket-types/${req.params.id} error:`,
         err
       )
       res.status(500).send('Error deleting ticket type')
