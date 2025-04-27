@@ -1,0 +1,46 @@
+<% layout('layout') %>
+<% title = 'Dashboard' %>
+
+<div class="container mt-4">
+    <h1>Ticket Types</h1>
+
+    <a href="/admin/ticket-types/new" class="btn btn-primary mb-3">Add New Ticket Type</a>
+
+    <% if (ticketTypes.length > 0) { %>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Amount (KES)</th>
+                        <th scope="col">Max Tickets</th>
+                        <th scope="col">Tickets Sold</th>
+                        <th scope="col">Created At</th>
+                        <th scope="col">Updated At</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% ticketTypes.forEach(ticketType => { %>
+                        <tr>
+                            <td><%= ticketType.name %></td>
+                            <td><%= ticketType.amount %></td>
+                            <td><%= ticketType.maximum_tickets %></td>
+                            <td><%= ticketType.tickets_sold %></td>
+                            <td><%= ticketType.createdAt.toDateString() %></td>
+                            <td><%= ticketType.updatedAt.toDateString() %></td>
+                            <td>
+                                <a href="/admin/ticket-types/<%= ticketType._id %>/edit" class="btn btn-sm btn-warning me-2">Edit</a>
+                                <form action="/admin/ticket-types/<%= ticketType._id %>?_method=DELETE" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete <%= ticketType.name %>?');">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    <% } else { %>
+        <p>No ticket types found yet.</p>
+    <% } %>
+</div>

@@ -1,0 +1,38 @@
+<% layout('layout') %>
+<% title = 'Dashboard' %>
+<div class="container mt-4">
+    <h1>Edit Ticket Type</h1>
+
+     <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger" role="alert">
+            <%= error %>
+        </div>
+    <% } %>
+
+    <% if (ticketType) { %>
+        <form action="/admin/ticket-types/<%= ticketType._id %>?_method=PUT" method="POST">
+            <div class="mb-3">
+                <label for="name" class="form-label">Ticket Name:</label>
+                <input type="text" class="form-control" id="name" name="name" value="<%= typeof formData !== 'undefined' ? formData.name : ticketType.name %>" required>
+            </div>
+            <div class="mb-3">
+                <label for="amount" class="form-label">Amount (KES):</label>
+                <input type="number" class="form-control" id="amount" name="amount" value="<%= typeof formData !== 'undefined' ? formData.amount : ticketType.amount %>" required min="0">
+            </div>
+            <div class="mb-3">
+                <label for="maximum_tickets" class="form-label">Maximum Number of Tickets:</label>
+                <input type="number" class="form-control" id="maximum_tickets" name="maximum_tickets" value="<%= typeof formData !== 'undefined' ? formData.maximum_tickets : ticketType.maximum_tickets %>" required min="0">
+            </div>
+            <div class="mb-3">
+                <label for="tickets_sold" class="form-label">Tickets Sold:</label>
+                <% // tickets_sold can be edited, but be mindful of the validation hook %>
+                <input type="number" class="form-control" id="tickets_sold" name="tickets_sold" value="<%= typeof formData !== 'undefined' ? formData.tickets_sold : ticketType.tickets_sold %>" required min="0">
+            </div>
+            <button type="submit" class="btn btn-success">Update Ticket Type</button>
+            <a href="/admin/ticket-types" class="btn btn-secondary">Cancel</a>
+        </form>
+    <% } else { %>
+        <p>Ticket Type not found.</p>
+        <a href="/admin/ticket-types" class="btn btn-secondary">Back to Ticket Types</a>
+    <% } %>
+</div>

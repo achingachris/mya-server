@@ -1,0 +1,30 @@
+<% layout('layout') %>
+<% title = 'Dashboard' %>
+
+<div class="container mt-4">
+    <h1>Create New Ticket Type</h1>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger" role="alert">
+            <%= error %>
+        </div>
+    <% } %>
+
+    <form action="/admin/ticket-types" method="POST">
+        <div class="mb-3">
+            <label for="name" class="form-label">Ticket Name:</label>
+            <input type="text" class="form-control" id="name" name="name" value="<%= typeof formData !== 'undefined' ? formData.name : '' %>" required>
+        </div>
+        <div class="mb-3">
+            <label for="amount" class="form-label">Amount (KES):</label>
+            <input type="number" class="form-control" id="amount" name="amount" value="<%= typeof formData !== 'undefined' ? formData.amount : '' %>" required min="0">
+        </div>
+        <div class="mb-3">
+            <label for="maximum_tickets" class="form-label">Maximum Number of Tickets:</label>
+            <input type="number" class="form-control" id="maximum_tickets" name="maximum_tickets" value="<%= typeof formData !== 'undefined' ? formData.maximum_tickets : '' %>" required min="0">
+        </div>
+        <% // tickets_sold is typically managed by the system, not set on creation form %>
+        <button type="submit" class="btn btn-success">Create Ticket Type</button>
+        <a href="/admin/ticket-types" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>

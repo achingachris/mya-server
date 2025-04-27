@@ -6,6 +6,7 @@ const Admin = require('../models/Admin')
 const NominationCategory = require('../models/NominationCategory')
 const Nominee = require('../models/Nominee')
 const Vote = require('../models/Vote')
+const TicketType = require('../models/TicketType')
 const { authMiddleware } = require('../middleware/auth')
 
 // Login Page
@@ -170,6 +171,146 @@ router.get('/votes', authMiddleware, async (req, res) => {
   const votes = await Vote.find().populate('nominee')
   res.render('votes', { votes })
 })
+
+// --- Ticket Types Routes ---
+
+// List all Ticket Types
+router.get(
+  '/ticket-types',
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const ticketTypes = await TicketType.find({})
+      res.render('tickettypes/index', { ticketTypes })
+    } catch (err) {
+      handleError(res, err, 'tickettypes/index', {
+        ticketTypes: [],
+      })
+    }
+  }
+)
+
+// Show form to create a new Ticket Type
+router.get(
+  '/ticket-types/new',
+  authMiddleware,
+  (req, res) => {
+    res.render('tickettypes/new')
+  }
+)
+
+// Handle creation of a new Ticket Type
+router.post(
+  '/ticket-types',
+  authMiddleware,
+  async (req, res) => {
+    try {
+      await TicketType.create(req.body)
+      res.redirect('/admin/ticket-types')
+    } catch (err) {
+      // Handle validation errors specifically if needed
+      if (err.name === 'ValidationError') {
+        console.error('Validation Error:', err.message)
+        // You might want to re-render the form with error messages
+        return res
+          .status(400)
+          .render('tickettypes/new', {
+            error: err.message,
+            formData: req.body,
+          })
+      }
+      handleError(res, err, 'tickettypes/new', {
+        formData: req.body,
+      })
+    }
+  }
+)
+
+// Show form to edit a Ticket Type
+router.get(
+  '/ticket-types/:id/edit',
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const ticketType = await TicketType.findById(
+        req.params.id
+      )
+      if (!ticketType)
+        return res
+          .status(404)
+          .render('error', {
+            message: 'Ticket Type not found',
+          })
+      res.render('tickettypes/edit', { ticketType })
+    } catch (err) {
+      handleError(res, err, 'tickettypes/edit', {
+        ticketType: null,
+      })
+    }
+  }
+)
+
+// Handle update of a Ticket Type
+router.put(
+  '/ticket-types/:id',
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const updatedTicketType =
+        await TicketType.findByIdAndUpdate(
+          req.params.id,
+          req.body,
+          { new: true, runValidators: true }
+        ) // runValidators ensures pre-save hooks run
+      if (!updatedTicketType)
+        return res
+          .status(404)
+          .render('error', {
+            message: 'Ticket Type not found',
+          })
+      res.redirect('/admin/ticket-types')
+    } catch (err) {
+      // Handle validation errors specifically if needed
+      if (err.name === 'ValidationError') {
+        console.error('Validation Error:', err.message)
+        // You might want to re-render the form with error messages
+        const ticketType = await TicketType.findById(
+          req.params.id
+        ) // Fetch original document or use req.body
+        return res
+          .status(400)
+          .render('tickettypes/edit', {
+            error: err.message,
+            ticketType: ticketType || req.body,
+          })
+      }
+      handleError(res, err, 'tickettypes/edit') // Might need to fetch ticketType again on error
+    }
+  }
+)
+
+// Handle deletion of a Ticket Type
+router.delete(
+  '/ticket-types/:id',
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const deletedTicketType =
+        await TicketType.findByIdAndDelete(req.params.id)
+      if (!deletedTicketType)
+        return res
+          .status(404)
+          .render('error', {
+            message: 'Ticket Type not found',
+          })
+      res.redirect('/admin/ticket-types')
+    } catch (err) {
+      handleError(res, err, 'tickettypes/index') // Might need to fetch ticketTypes again on error
+    }
+  }
+)
+
+// --- End of Ticket Types Routes ---
 
 // Revenue
 router.get('/revenue', authMiddleware, async (req, res) => {
