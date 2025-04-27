@@ -6,9 +6,6 @@ const methodOverride = require('method-override')
 const cors = require('cors')
 const connectDB = require('./config/db')
 
-// Import routes
-const adminRoutes = require('./routes/admin')
-
 // Updated Admin routes
 const adminDashboardRoutes = require('./routes/admin/dashboard')
 const votesDashboardRoutes = require('./routes/admin/votes')
@@ -33,7 +30,17 @@ const path = require('path')
 
 const app = express()
 
-// Middleware
+// --- Middleware to capture raw body for Paystack webhooks ---
+// This middleware MUST come BEFORE any express.json() or body-parser middleware
+// that would parse the body for other routes.
+// The path here must match the path where you mount your Paystack webhook router.
+app.use(
+  '/api/v2/paystack-webhook',
+  express.raw({ type: 'application/json' })
+)
+
+// Middleware for parsing request bodies (JSON and URL-encoded)
+// This should come AFTER the raw body middleware for webhooks
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
@@ -84,8 +91,6 @@ app.use(
 
 // Define your main routes AFTER static files are served
 
-// app.use('/admin', adminRoutes)
-
 // updated admin routes
 app.use('/dashboard', adminDashboardRoutes)
 app.use('/dashboard/votes', votesDashboardRoutes)
@@ -94,16 +99,20 @@ app.use(
   '/dashboard/nomination-categories',
   categoriesDashboardRoutes
 )
-app.use('/dashboard/ticket-types', titcketTypesDashboardRoutes)
+app.use(
+  '/dashboard/ticket-types',
+  titcketTypesDashboardRoutes
+)
 app.use('/dashboard/tickets', ticketDashboardRoutes)
 app.use('/dashboard/coupons', couponsDashboardRoutes)
 
-app.use('/api', apiRoutes)
+// app.use('/api', apiRoutes)
 
 // Version 2 APIs
+// Mount the webhook router AFTER the raw body middleware for its specific path
+app.use('/api/v2/paystack-webhook', paystackWebhook) // Ensure this path matches the raw middleware path
 app.use('/api/v2/voting', votingApiRoutes)
 app.use('/api/v2/tickets', ticketsApiRoutes)
-app.use('/api/v2/paystack-webhook', paystackWebhook)
 
 // Function to create a default admin user
 const createDefaultAdmin = async () => {
