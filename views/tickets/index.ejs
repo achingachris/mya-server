@@ -1,0 +1,44 @@
+<% layout('layout') %>
+<% title = 'Dashboard' %>
+
+<div class="container mt-4">
+  <h1>Purchased Tickets</h1>
+
+  <% if (tickets.length > 0) { %>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th scope="col">Reference Number</th>
+          <th scope="col">Purchaser Name</th>
+          <th scope="col">Purchaser Email</th>
+          <th scope="col">Purchaser Phone</th>
+          <th scope="col">Ticket Type</th>
+          <th scope="col">Number of Tickets</th>
+          <th scope="col">Total Amount (KES)</th>
+          <th scope="col">Payment Status</th>
+          <th scope="col">Purchase Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% tickets.forEach(ticket => { %>
+        <tr>
+          <td><%= ticket.ticket_reference_number %></td>
+          <td><%= ticket.purchaser_name %></td>
+          <td><%= ticket.purchaser_email %></td>
+          <td><%= ticket.purchaser_phone %></td>
+          <% // Check if ticket_type is populated before accessing its properties %>
+          <td><%= ticket.ticket_type ? ticket.ticket_type.name : 'N/A' %></td>
+          <td><%= ticket.number_of_tickets %></td>
+          <td><%= ticket.total_amount %></td>
+          <td><%= ticket.payment_status %></td>
+          <td><%= ticket.purchase_date.toDateString() %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } else { %>
+  <p>No tickets have been purchased yet.</p>
+  <% } %>
+</div>

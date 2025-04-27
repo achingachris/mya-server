@@ -7,6 +7,7 @@ const NominationCategory = require('../models/NominationCategory')
 const Nominee = require('../models/Nominee')
 const Vote = require('../models/Vote')
 const TicketType = require('../models/TicketType')
+const Ticket = require('../models/Ticket');
 const { authMiddleware } = require('../middleware/auth')
 
 // Login Page
@@ -24,7 +25,7 @@ router.post('/login', async (req, res) => {
   const token = jwt.sign(
     { id: admin._id },
     process.env.JWT_SECRET,
-    { expiresIn: '1h' }
+    { expiresIn: '5h' }
   )
   res.cookie('token', token, { httpOnly: true })
   res.redirect('/admin/dashboard')
@@ -310,7 +311,47 @@ router.delete(
   }
 )
 
-// --- End of Ticket Types Routes ---
+// --- Tickets Routes ---
+
+// List all Tickets
+router.get('/tickets', authMiddleware, async (req, res) => {
+  try {
+    // Fetch all tickets and populate the ticket_type details
+    const tickets = await Ticket.find({}).populate('ticket_type');
+    res.render('tickets/index', { tickets }); // Render the new tickets index view
+  } catch (err) {
+    handleError(res, err, 'tickets/index', { tickets: [] }); // Handle errors
+  }
+});
+
+// Get Ticket Sales Summary
+router.get('/ticket-sales-summary', authMiddleware, async (req, res) => {
+  try {
+    const summary = await Ticket.aggregate([
+      { $match: { payment_status: 'completed' } }, // Only consider completed payments
+      {
+        $group: {
+          _id: null, // Group all documents together
+          totalRevenue: { $sum: '$total_amount' }, // Sum the total_amount field
+          totalTicketsSold: { $sum: '$number_of_tickets' }, // Sum the number_of_tickets field
+        },
+      },
+    ]);
+
+    // The aggregation result is an array, summary[0] contains the totals if any documents matched
+    const totalRevenue = summary[0]?.totalRevenue || 0;
+    const totalTicketsSold = summary[0]?.totalTicketsSold || 0;
+
+    res.render('tickets/summary', { totalRevenue, totalTicketsSold }); // Render a new summary view
+
+  } catch (err) {
+    handleError(res, err, 'tickets/summary', { totalRevenue: 0, totalTicketsSold: 0 }); // Handle errors
+  }
+});
+
+
+// --- End of Tickets Routes ---
+
 
 // Revenue
 router.get('/revenue', authMiddleware, async (req, res) => {

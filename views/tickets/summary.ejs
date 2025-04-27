@@ -1,0 +1,33 @@
+<% layout('layout') %>
+<% title = 'Dashboard' %>
+
+<div class="container mt-4">
+  <h1>Ticket Sales Summary</h1>
+
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <div class="card text-center">
+        <div class="card-header">Total Revenue from Tickets</div>
+        <div class="card-body">
+          <h5 class="card-title display-4">
+            KSh <%= totalRevenue.toLocaleString() %>
+          </h5>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 mb-4">
+      <div class="card text-center">
+        <div class="card-header">Total Tickets Sold (Completed Payments)</div>
+        <div class="card-body">
+          <h5 class="card-title display-4">
+            <%= totalTicketsSold.toLocaleString() %>
+          </h5>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <a href="/admin/tickets" class="btn btn-secondary">View All Tickets</a>
+  </div>
+</div>
