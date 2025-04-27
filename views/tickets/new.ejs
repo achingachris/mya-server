@@ -12,7 +12,7 @@
     </div>
     <div class="card-body">
         <%# Form submission will now initiate Paystack payment %>
-        <form action="/admin/tickets" method="POST">
+        <form action="/dashboard/tickets" method="POST">
             <div class="form-group">
                 <label for="ticket_type">Ticket Type:</label>
                 <select class="form-control" id="ticket_type" name="ticket_type" required>
@@ -52,7 +52,7 @@
              <%# <input type="hidden" name="payment_status" value="pending"> %>
 
             <button type="submit" class="btn btn-primary">Create Ticket & Initiate Payment</button>
-            <a href="/admin/tickets" class="btn btn-secondary">Cancel</a>
+            <a href="/dashboard/tickets" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
 </div>

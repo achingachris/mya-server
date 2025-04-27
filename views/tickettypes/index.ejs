@@ -1,48 +1,67 @@
 <% layout('layout') %>
-<% title = 'Ticket Types' %>
+    <% title='Ticket Types' %>
 
-<h1 class="h3 mb-4 text-gray-800">Ticket Types</h1>
+        <h1 class="h3 mb-4 text-gray-800">Ticket Types</h1>
 
-<a href="/admin/tickettypes/new" class="btn btn-primary mb-3">Add New Ticket Type</a>
+        <a href="/dashboard/ticket-types/new" class="btn btn-primary mb-3">Add New Ticket Type</a>
 
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">All Ticket Types</h6>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Total Available</th>
-                        <th>Tickets Sold</th>
-                        <th>Created At</th>
-                        <th>Updated At</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% ticketTypes.forEach(type => { %>
-                    <tr>
-                        <td><%= type.name %></td>
-                        <td><%= type.price.toFixed(2) %></td> <%# Format price %>
-                        <td><%= type.total_available %></td>
-                        <td><%= type.tickets_sold %></td>
-                        <td><%= type.createdAt.toDateString() %></td> <%# Format date %>
-                        <td><%= type.updatedAt.toDateString() %></td> <%# Format date %>
-                        <td>
-                            <a href="/admin/tickettypes/<%= type._id %>/edit" class="btn btn-warning btn-sm">Edit</a>
-                            <%# Delete form %>
-                            <form action="/admin/tickettypes/<%= type._id %>?_method=DELETE" method="POST" class="d-inline">
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this ticket type?')">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    <% }) %>
-                </tbody>
-            </table>
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">All Ticket Types</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Total Available</th>
+                                <th>Tickets Sold</th>
+                                <th>Created At</th>
+                                <th>Updated At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% ticketTypes.forEach(type=> { %>
+                                <tr>
+                                    <td>
+                                        <%= type.name %>
+                                    </td>
+                                    <td>
+                                        <%= type.price.toFixed(2) %>
+                                    </td>
+                                    <%# Format price %>
+                                        <td>
+                                            <%= type.total_available %>
+                                        </td>
+                                        <td>
+                                            <%= type.tickets_sold %>
+                                        </td>
+                                        <td>
+                                            <%= type.createdAt.toDateString() %>
+                                        </td>
+                                        <%# Format date %>
+                                            <td>
+                                                <%= type.updatedAt.toDateString() %>
+                                            </td>
+                                            <%# Format date %>
+                                                <td>
+                                                    <a href="/dashboard/tickettypes/<%= type._id %>/edit"
+                                                        class="btn btn-warning btn-sm">Edit</a>
+                                                    <%# Delete form %>
+                                                        <form
+                                                            action="/dashboard/tickettypes/<%= type._id %>?_method=DELETE"
+                                                            method="POST" class="d-inline">
+                                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                                onclick="return confirm('Are you sure you want to delete this ticket type?')">Delete</button>
+                                                        </form>
+                                                </td>
+                                </tr>
+                                <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </div>
-</div>

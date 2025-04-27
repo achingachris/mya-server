@@ -37,7 +37,7 @@
                         <div class="card-body">
                             <%# Single Ticket Code Search %>
                                 <h5 class="mb-3">Search by Ticket Code</h5>
-                                <form action="/admin/tickets" method="GET" class="form-inline mb-4">
+                                <form action="/dashboard/tickets" method="GET" class="form-inline mb-4">
                                     <div class="form-group mr-2">
                                         <label for="code" class="sr-only">Ticket Code</label>
                                         <input type="text" class="form-control" id="code" name="code"
@@ -50,7 +50,7 @@
 
                                 <%# Advanced Search %>
                                     <h5 class="mb-3">Advanced Search</h5>
-                                    <form action="/admin/tickets" method="GET">
+                                    <form action="/dashboard/tickets" method="GET">
                                         <div class="form-row">
                                             <div class="form-group col-md-6">
                                                 <label for="name">Purchaser Name:</label>
@@ -141,11 +141,11 @@
                                                             <%= ticket.createdAt.toDateString() %>
                                                         </td>
                                                         <td>
-                                                            <a href="/admin/tickets/<%= ticket._id %>/edit"
+                                                            <a href="/dashboard/tickets/<%= ticket._id %>/edit"
                                                                 class="btn btn-warning btn-sm">Edit</a>
                                                             <%# Delete form %>
                                                                 <form
-                                                                    action="/admin/tickets/<%= ticket._id %>?_method=DELETE"
+                                                                    action="/dashboard/tickets/<%= ticket._id %>?_method=DELETE"
                                                                     method="POST" class="d-inline">
                                                                     <button type="submit" class="btn btn-danger btn-sm"
                                                                         onclick="return confirm('Are you sure you want to delete this ticket?')">Delete</button>
